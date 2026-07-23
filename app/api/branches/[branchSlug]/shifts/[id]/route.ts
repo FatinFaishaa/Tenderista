@@ -44,7 +44,7 @@ export async function PATCH(
     );
   }
 
-  const result = await withTenantContext(
+  const result = await withTenantContext<{ count: number }>(
     { userId: auth.userId, branchId: auth.branch.id },
     (tx) =>
       tx.shift.updateMany({
@@ -72,7 +72,7 @@ export async function DELETE(
   const auth = await requireOwner(branchSlug);
   if ("error" in auth) return auth.error;
 
-  const result = await withTenantContext(
+  const result = await withTenantContext<{ count: number }>(
     { userId: auth.userId, branchId: auth.branch.id },
     (tx) => tx.shift.deleteMany({ where: { id, branchId: auth.branch.id } })
   );
