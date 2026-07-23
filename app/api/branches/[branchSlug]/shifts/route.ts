@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Shift } from "@prisma/client";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { withTenantContext } from "@/lib/db";
@@ -35,7 +36,7 @@ export async function POST(
     );
   }
 
-  const shift = await withTenantContext(
+  const shift = await withTenantContext<Shift>(
     { userId: session.userId, branchId: branch.id },
     (tx) =>
       tx.shift.create({
