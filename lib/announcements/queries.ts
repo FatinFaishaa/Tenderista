@@ -22,7 +22,7 @@ export async function listAnnouncements(
       include: { creator: { select: { name: true } } },
     });
 
-    return rows.map((row) => ({
+        return rows.map((row) => ({
       id: row.id,
       title: row.title,
       message: row.body,
@@ -32,6 +32,7 @@ export async function listAnnouncements(
     }));
   });
 }
+
 
 export async function getAnnouncementById(
   branchId: string,
