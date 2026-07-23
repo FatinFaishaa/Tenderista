@@ -34,7 +34,7 @@ export async function POST(
     );
   }
 
-  const announcement = await withTenantContext(
+  const announcement = await withTenantContext<{ id: string }>(
     { userId: session.userId, branchId: branch.id },
     (tx) =>
       tx.announcement.create({
