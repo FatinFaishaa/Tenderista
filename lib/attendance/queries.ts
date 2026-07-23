@@ -169,7 +169,7 @@ const attendanceByStaff = new Map(
   attendanceRows.map((a: typeof attendanceRows[number]) => [a.staffId, a])
 );
 
-    return staffList.map((staff) => {
+     return staffList.map((staff: typeof staffList[number]) => {
       const schedule = scheduleByStaff.get(staff.id);
       const attendance = attendanceByStaff.get(staff.id);
       return {
