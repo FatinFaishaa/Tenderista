@@ -43,7 +43,7 @@ export async function PATCH(
     );
   }
 
-  const result = await withTenantContext(
+  const result = await withTenantContext<{ count: number }>(
     { userId: auth.userId, branchId: auth.branch.id },
     (tx) =>
       tx.openingChecklistItem.updateMany({
@@ -67,7 +67,7 @@ export async function DELETE(
   const auth = await requireOwnerOrManager(branchSlug);
   if ("error" in auth) return auth.error;
 
-  const result = await withTenantContext(
+  const result = await withTenantContext<{ count: number }>(
     { userId: auth.userId, branchId: auth.branch.id },
     (tx) => tx.openingChecklistItem.deleteMany({ where: { id, branchId: auth.branch.id } })
   );
