@@ -161,8 +161,13 @@ export async function listTodaysAttendance(
       tx.attendanceRecord.findMany({ where: { branchId, date: targetDate } }),
     ]);
 
-    const scheduleByStaff = new Map(scheduleRows.map((s) => [s.staffId, s]));
-    const attendanceByStaff = new Map(attendanceRows.map((a) => [a.staffId, a]));
+    const scheduleByStaff = new Map(
+  scheduleRows.map((s: typeof scheduleRows[number]) => [s.staffId, s])
+);
+
+const attendanceByStaff = new Map(
+  attendanceRows.map((a: typeof attendanceRows[number]) => [a.staffId, a])
+);
 
     return staffList.map((staff) => {
       const schedule = scheduleByStaff.get(staff.id);
