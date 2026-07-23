@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { withTenantContext } from "@/lib/db";
@@ -44,7 +43,7 @@ export async function PATCH(
     );
   }
 
-  const result = await withTenantContext<Prisma.BatchPayload>(
+  const result = await withTenantContext<{ count: number }>(
     { userId: auth.userId, branchId: auth.branch.id },
     (tx) =>
       tx.announcement.updateMany({
@@ -68,7 +67,7 @@ export async function DELETE(
   const auth = await requireOwnerOrManager(branchSlug);
   if ("error" in auth) return auth.error;
 
-  const result = await withTenantContext<Prisma.BatchPayload>(
+  const result = await withTenantContext<{ count: number }>(
     { userId: auth.userId, branchId: auth.branch.id },
     (tx) => tx.announcement.deleteMany({ where: { id, branchId: auth.branch.id } })
   );
