@@ -1,0 +1,1371 @@
+// Tenderista — Prisma schema
+// Mirrors docs/DATABASE_SCHEMA.md exactly (table/column names preserved via @map/@@map).
+// CHECK constraints and Row-Level Security policies are NOT expressible here — they are
+// appended as raw SQL to the generated migration (see prisma/migrations/*/migration.sql).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum AdminStatus {
+  active
+  suspended
+
+  @@map("admin_status_enum")
+}
+
+enum BranchStatus {
+  active
+  suspended
+
+  @@map("branch_status_enum")
+}
+
+enum GrantStatus {
+  pending
+  approved
+  denied
+  revoked
+  expired
+
+  @@map("grant_status_enum")
+}
+
+enum ActorType {
+  platform_admin
+  user
+
+  @@map("actor_type_enum")
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+
+  @@map("user_status_enum")
+}
+
+enum StaffRole {
+  manager
+  staff
+
+  @@map("staff_role_enum")
+}
+
+enum EmploymentStatus {
+  probation
+  active
+  on_leave
+  resigned
+  terminated
+
+  @@map("employment_status_enum")
+}
+
+enum SalaryType {
+  monthly
+  hourly
+
+  @@map("salary_type_enum")
+}
+
+enum StaffStatus {
+  active
+  inactive
+
+  @@map("staff_status_enum")
+}
+
+enum AttendanceStatus {
+  present
+  late
+  absent
+  on_leave
+
+  @@map("attendance_status_enum")
+}
+
+enum LeaveType {
+  annual
+  medical
+  emergency
+  unpaid
+  other
+
+  @@map("leave_type_enum")
+}
+
+enum LeaveStatus {
+  pending
+  approved
+  rejected
+  cancelled
+
+  @@map("leave_status_enum")
+}
+
+enum ChecklistType {
+  opening
+  closing
+  kitchen
+  weekly_cleaning
+  monthly_audit
+  custom
+
+  @@map("checklist_type_enum")
+}
+
+enum RecurrenceType {
+  daily
+  weekly
+  monthly
+
+  @@map("recurrence_type_enum")
+}
+
+enum AssignedType {
+  staff
+  role
+  shift
+
+  @@map("assigned_type_enum")
+}
+
+enum ChecklistInstanceStatus {
+  pending
+  in_progress
+  pending_review
+  approved
+
+  @@map("checklist_instance_status_enum")
+}
+
+enum AttachmentType {
+  image
+  document
+  video
+
+  @@map("attachment_type_enum")
+}
+
+enum AnnouncementTarget {
+  branch
+  role
+  individual
+
+  @@map("announcement_target_enum")
+}
+
+enum IncomeType {
+  sales
+  other
+
+  @@map("income_type_enum")
+}
+
+enum IncomeChannel {
+  walk_in
+  foodpanda
+  grabfood
+  other
+
+  @@map("income_channel_enum")
+}
+
+enum IncomeStatus {
+  received
+  pending
+
+  @@map("income_status_enum")
+}
+
+enum ExpenseStatus {
+  paid
+  unpaid
+
+  @@map("expense_status_enum")
+}
+
+enum AccountType {
+  cash
+  bank
+  ewallet
+
+  @@map("account_type_enum")
+}
+
+enum CashFlowType {
+  income
+  expense
+  transfer
+  withdrawal
+  capital_injection
+  refund
+  adjustment
+
+  @@map("cash_flow_type_enum")
+}
+
+enum PayrollStatus {
+  draft
+  finalized
+  paid
+
+  @@map("payroll_status_enum")
+}
+
+enum ClosingStatus {
+  draft
+  locked
+  reopened
+
+  @@map("closing_status_enum")
+}
+
+// ───────────────────────── Platform-level ─────────────────────────
+
+model PlatformAdmin {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String      @db.VarChar(150)
+  email        String      @unique @db.VarChar(255)
+  passwordHash String      @map("password_hash")
+  status       AdminStatus @default(active)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  createdBranches     Branch[]             @relation("BranchCreatedBy")
+  supportAccessGrants SupportAccessGrant[] @relation("GrantRequestedBy")
+  auditLogs           AuditLog[]           @relation("AuditActorPlatformAdmin")
+
+  @@map("platform_admins")
+}
+
+model Branch {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String       @db.VarChar(150)
+  slug      String       @unique @db.VarChar(100)
+  address   String?
+  timezone  String       @default("Asia/Kuala_Lumpur") @db.VarChar(50)
+  currency  String       @default("MYR") @db.Char(3)
+  status    BranchStatus @default(active)
+  createdBy String?      @map("created_by") @db.Uuid
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator PlatformAdmin? @relation("BranchCreatedBy", fields: [createdBy], references: [id])
+
+  branchOwners                BranchOwner[]
+  staff                       Staff[]
+  rolePermissions             RolePermission[]
+  shifts                      Shift[]
+  schedules                   Schedule[]
+  attendanceRecords           AttendanceRecord[]
+  breakRecords                BreakRecord[]
+  leaveRequests               LeaveRequest[]
+  checklistTemplates          ChecklistTemplate[]
+  checklistTemplateItems      ChecklistTemplateItem[]
+  checklistInstances          ChecklistInstance[]
+  checklistInstanceItems      ChecklistInstanceItem[]
+  openingChecklistItems       OpeningChecklistItem[]
+  openingChecklistCompletions OpeningChecklistCompletion[]
+  closingChecklistItems       ClosingChecklistItem[]
+  closingChecklistCompletions ClosingChecklistCompletion[]
+  dailyTasks                  DailyTask[]
+  dailyTaskCompletions        DailyTaskCompletion[]
+  sopCategories               SopCategory[]
+  sops                        Sop[]
+  sopAttachments              SopAttachment[]
+  sopAcknowledgements         SopAcknowledgement[]
+  announcements               Announcement[]
+  announcementReads           AnnouncementRead[]
+  incomeEntries               IncomeEntry[]
+  expenseCategories           ExpenseCategory[]
+  expenses                    Expense[]
+  expenseTemplates            ExpenseTemplate[]
+  accounts                    Account[]
+  cashFlowTransactions        CashFlowTransaction[]
+  payrollSettings             PayrollSettings?
+  payrollRecords              PayrollRecord[]
+  monthlyClosings             MonthlyClosing[]
+  monthlyClosingSnapshots     MonthlyClosingSnapshot[]
+  monthlyClosingDocuments     MonthlyClosingDocument[]
+  supportAccessGrants         SupportAccessGrant[]
+  auditLogs                   AuditLog[]
+  staffDocuments              StaffDocument[]
+  stockItems                  StockItem[]
+  dailyFinancialRecords       DailyFinancialRecord[]
+  dailyExpenses               DailyExpense[]
+  dailyClosings               DailyClosing[]
+
+  @@map("branches")
+}
+
+model SupportAccessGrant {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String      @map("branch_id") @db.Uuid
+  requestedBy String      @map("requested_by") @db.Uuid
+  reason      String
+  status      GrantStatus @default(pending)
+  approvedBy  String?     @map("approved_by") @db.Uuid
+  grantedAt   DateTime?   @map("granted_at") @db.Timestamptz(6)
+  expiresAt   DateTime?   @map("expires_at") @db.Timestamptz(6)
+  revokedAt   DateTime?   @map("revoked_at") @db.Timestamptz(6)
+  revokedBy   String?     @map("revoked_by") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch    Branch        @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  requester PlatformAdmin @relation("GrantRequestedBy", fields: [requestedBy], references: [id])
+  approver  User?         @relation("GrantApprovedBy", fields: [approvedBy], references: [id])
+  revoker   User?         @relation("GrantRevokedBy", fields: [revokedBy], references: [id])
+  auditLogs AuditLog[]
+
+  @@index([branchId, status])
+  @@index([requestedBy, status])
+  @@index([expiresAt])
+  @@map("support_access_grants")
+}
+
+model AuditLog {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId             String?   @map("branch_id") @db.Uuid
+  actorType            ActorType @map("actor_type")
+  actorPlatformAdminId String?   @map("actor_platform_admin_id") @db.Uuid
+  actorUserId          String?   @map("actor_user_id") @db.Uuid
+  action               String    @db.VarChar(100)
+  entityType           String    @map("entity_type") @db.VarChar(100)
+  entityId             String?   @map("entity_id") @db.Uuid
+  metadata             Json?
+  grantId              String?   @map("grant_id") @db.Uuid
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch             Branch?             @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  actorPlatformAdmin PlatformAdmin?      @relation("AuditActorPlatformAdmin", fields: [actorPlatformAdminId], references: [id])
+  actorUser          User?               @relation("AuditActorUser", fields: [actorUserId], references: [id])
+  grant              SupportAccessGrant? @relation(fields: [grantId], references: [id])
+
+  @@index([branchId, createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// ───────────────────────────── Identity ─────────────────────────────
+
+model User {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String     @db.VarChar(150)
+  email        String?    @unique @db.VarChar(255)
+  phone        String?    @unique @db.VarChar(30)
+  passwordHash String     @map("password_hash")
+  status       UserStatus @default(active)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branchOwners                      BranchOwner[]
+  staff                             Staff[]
+  rolePermissionUpdates             RolePermission[]
+  staffDocumentUploads              StaffDocument[]
+  attendanceEdits                   AttendanceRecord[]
+  leaveApprovals                    LeaveRequest[]
+  schedulesPublished                Schedule[]
+  checklistTemplatesCreated         ChecklistTemplate[]
+  checklistInstancesSubmitted       ChecklistInstance[]          @relation("ChecklistSubmittedBy")
+  checklistInstancesApproved        ChecklistInstance[]          @relation("ChecklistApprovedBy")
+  checklistInstancesReopenRequested ChecklistInstance[]          @relation("ChecklistReopenRequestedBy")
+  checklistInstancesReopened        ChecklistInstance[]          @relation("ChecklistReopenedBy")
+  checklistItemCompletions          ChecklistInstanceItem[]
+  openingChecklistItemsCreated      OpeningChecklistItem[]
+  openingChecklistCompletions       OpeningChecklistCompletion[]
+  closingChecklistItemsCreated      ClosingChecklistItem[]
+  closingChecklistCompletions       ClosingChecklistCompletion[]
+  dailyTasksCreated                 DailyTask[]                   @relation("DailyTaskCreatedBy")
+  dailyTaskCompletions              DailyTaskCompletion[]         @relation("DailyTaskCompletedBy")
+  sopsCreated                       Sop[]
+  announcementsCreated              Announcement[]
+  incomeEntriesEntered              IncomeEntry[]                @relation("IncomeEnteredBy")
+  incomeEntriesDeleted              IncomeEntry[]                @relation("IncomeDeletedBy")
+  expensesEntered                   Expense[]                    @relation("ExpenseEnteredBy")
+  expensesDeleted                   Expense[]                    @relation("ExpenseDeletedBy")
+  expenseTemplatesCreated           ExpenseTemplate[]
+  cashFlowEntered                   CashFlowTransaction[]        @relation("CashFlowEnteredBy")
+  cashFlowDeleted                   CashFlowTransaction[]        @relation("CashFlowDeletedBy")
+  payrollFinalizations              PayrollRecord[]
+  monthlyClosingsLocked             MonthlyClosing[]             @relation("ClosingLockedBy")
+  monthlyClosingsReopened           MonthlyClosing[]             @relation("ClosingReopenedBy")
+  monthlyClosingSnapshots           MonthlyClosingSnapshot[]
+  monthlyClosingDocuments           MonthlyClosingDocument[]
+  supportGrantsApproved             SupportAccessGrant[]         @relation("GrantApprovedBy")
+  supportGrantsRevoked              SupportAccessGrant[]         @relation("GrantRevokedBy")
+  auditLogs                         AuditLog[]                   @relation("AuditActorUser")
+  stockItemsCreated                 StockItem[]                  @relation("StockItemCreatedBy")
+  stockItemsUpdated                 StockItem[]                  @relation("StockItemUpdatedBy")
+  dailyFinancialRecordsCreated      DailyFinancialRecord[]       @relation("DailyFinancialRecordCreatedBy")
+  dailyFinancialRecordsUpdated      DailyFinancialRecord[]       @relation("DailyFinancialRecordUpdatedBy")
+  dailyExpensesCreated              DailyExpense[]               @relation("DailyExpenseCreatedBy")
+  dailyClosingsClosed               DailyClosing[]               @relation("DailyClosingClosedBy")
+  dailyClosingsReopened             DailyClosing[]               @relation("DailyClosingReopenedBy")
+
+  @@map("users")
+}
+
+model BranchOwner {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  branchId       String   @map("branch_id") @db.Uuid
+  isPrimaryOwner Boolean  @default(true) @map("is_primary_owner")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, branchId])
+  @@index([branchId])
+  @@map("branch_owners")
+}
+
+// ───────────────────────────── Staff ─────────────────────────────
+
+model Staff {
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId         String               @map("branch_id") @db.Uuid
+  userId           String               @map("user_id") @db.Uuid
+  role             StaffRole
+  jobPosition      String               @map("job_position") @db.VarChar(100)
+  department       ChecklistDepartment?
+  employmentStatus EmploymentStatus     @default(active) @map("employment_status")
+  startDate        DateTime             @map("start_date") @db.Date
+  endDate          DateTime?            @map("end_date") @db.Date
+  salaryType       SalaryType           @map("salary_type")
+  basicSalary      Decimal?             @map("basic_salary") @db.Decimal(12, 2)
+  hourlyRate       Decimal?             @map("hourly_rate") @db.Decimal(12, 2)
+  status           StaffStatus          @default(active)
+  notes            String?
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  documents             StaffDocument[]
+  schedules             Schedule[]
+  attendanceRecords     AttendanceRecord[]
+  leaveRequests         LeaveRequest[]
+  assignedChecklists    ChecklistInstance[]
+  sopAcknowledgements   SopAcknowledgement[]
+  announcementReads     AnnouncementRead[]
+  targetedAnnouncements Announcement[]
+  payrollRecords        PayrollRecord[]
+
+  @@unique([branchId, userId])
+  @@index([branchId, status])
+  @@index([userId])
+  @@map("staff")
+}
+
+model StaffDocument {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String   @map("branch_id") @db.Uuid
+  staffId    String   @map("staff_id") @db.Uuid
+  fileUrl    String   @map("file_url")
+  type       String?  @db.VarChar(50)
+  note       String?
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff    Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  uploader User   @relation(fields: [uploadedBy], references: [id])
+
+  @@index([staffId])
+  @@map("staff_documents")
+}
+
+model RolePermission {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String    @map("branch_id") @db.Uuid
+  role      StaffRole
+  module    String    @db.VarChar(50)
+  action    String    @db.VarChar(50)
+  allowed   Boolean   @default(false)
+  updatedBy String?   @map("updated_by") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch  Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  updater User?  @relation(fields: [updatedBy], references: [id])
+
+  @@unique([branchId, role, module, action])
+  @@index([branchId, role])
+  @@map("role_permissions")
+}
+
+// ───────────────────── Attendance & Scheduling ─────────────────────
+
+model Shift {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  name      String   @db.VarChar(100)
+  startTime DateTime @map("start_time") @db.Time
+  endTime   DateTime @map("end_time") @db.Time
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch             Branch              @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  schedules          Schedule[]
+  checklistInstances ChecklistInstance[]
+
+  @@index([branchId])
+  @@map("shifts")
+}
+
+model Schedule {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String    @map("branch_id") @db.Uuid
+  staffId     String    @map("staff_id") @db.Uuid
+  shiftId     String?   @map("shift_id") @db.Uuid
+  date        DateTime  @db.Date
+  isOffDay    Boolean   @default(false) @map("is_off_day")
+  // startTime/endTime are the source of truth for the actual assignment — shiftId is
+  // just "which template this started from" for display/prefill. Copied from the
+  // chosen Shift at assignment time, then freely editable independent of the template.
+  startTime   DateTime? @map("start_time") @db.Time
+  endTime     DateTime? @map("end_time") @db.Time
+  isPublished Boolean   @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  publishedBy String?   @map("published_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch            Branch             @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff             Staff              @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  shift             Shift?             @relation(fields: [shiftId], references: [id])
+  publisher         User?              @relation(fields: [publishedBy], references: [id])
+  attendanceRecords AttendanceRecord[]
+
+  @@unique([staffId, date])
+  @@index([branchId, date])
+  @@map("schedules")
+}
+
+model AttendanceRecord {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId      String           @map("branch_id") @db.Uuid
+  staffId       String           @map("staff_id") @db.Uuid
+  scheduleId    String?          @map("schedule_id") @db.Uuid
+  date          DateTime         @db.Date
+  clockInAt     DateTime?        @map("clock_in_at") @db.Timestamptz(6)
+  clockOutAt    DateTime?        @map("clock_out_at") @db.Timestamptz(6)
+  workedHours   Decimal          @default(0) @map("worked_hours") @db.Decimal(6, 2)
+  overtimeHours Decimal          @default(0) @map("overtime_hours") @db.Decimal(6, 2)
+  status        AttendanceStatus @default(present)
+  editedBy      String?          @map("edited_by") @db.Uuid
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch   Branch        @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff    Staff         @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  schedule Schedule?     @relation(fields: [scheduleId], references: [id])
+  editor   User?         @relation(fields: [editedBy], references: [id])
+  breaks   BreakRecord[]
+
+  @@unique([staffId, date])
+  @@index([branchId, date])
+  @@map("attendance_records")
+}
+
+model BreakRecord {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId     String    @map("branch_id") @db.Uuid
+  attendanceId String    @map("attendance_id") @db.Uuid
+  breakStart   DateTime  @map("break_start") @db.Timestamptz(6)
+  breakEnd     DateTime? @map("break_end") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch     Branch           @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  attendance AttendanceRecord @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+  @@map("break_records")
+}
+
+model LeaveRequest {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String      @map("branch_id") @db.Uuid
+  staffId     String      @map("staff_id") @db.Uuid
+  type        LeaveType
+  startDate   DateTime    @map("start_date") @db.Date
+  endDate     DateTime    @map("end_date") @db.Date
+  reason      String?
+  status      LeaveStatus @default(pending)
+  approvedBy  String?     @map("approved_by") @db.Uuid
+  decidedAt   DateTime?   @map("decided_at") @db.Timestamptz(6)
+  reviewNotes String?     @map("review_notes")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff    Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  approver User?  @relation(fields: [approvedBy], references: [id])
+
+  @@index([branchId, status])
+  @@index([staffId, startDate])
+  @@map("leave_requests")
+}
+
+// ───────────────────────── Checklists & SOPs ─────────────────────────
+
+model ChecklistTemplate {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId       String         @map("branch_id") @db.Uuid
+  name           String         @db.VarChar(150)
+  type           ChecklistType
+  recurrenceType RecurrenceType @map("recurrence_type")
+  weekdays       Int[]          @db.SmallInt
+  dayOfMonth     Int?           @map("day_of_month") @db.SmallInt
+  startDate      DateTime       @map("start_date") @db.Date
+  endDate        DateTime?      @map("end_date") @db.Date
+  isActive       Boolean        @default(true) @map("is_active")
+  createdBy      String         @map("created_by") @db.Uuid
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch    Branch                  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator   User                    @relation(fields: [createdBy], references: [id])
+  items     ChecklistTemplateItem[]
+  instances ChecklistInstance[]
+
+  @@index([branchId, isActive])
+  @@index([branchId, recurrenceType])
+  @@map("checklist_templates")
+}
+
+model ChecklistTemplateItem {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId      String   @map("branch_id") @db.Uuid
+  templateId    String   @map("template_id") @db.Uuid
+  description   String
+  requiresPhoto Boolean  @default(false) @map("requires_photo")
+  requiresNote  Boolean  @default(false) @map("requires_note")
+  sopId         String?  @map("sop_id") @db.Uuid
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch        Branch                  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  template      ChecklistTemplate       @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  sop           Sop?                    @relation(fields: [sopId], references: [id])
+  instanceItems ChecklistInstanceItem[]
+
+  @@index([templateId, sortOrder])
+  @@map("checklist_template_items")
+}
+
+model ChecklistInstance {
+  id                  String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId            String                  @map("branch_id") @db.Uuid
+  templateId          String?                 @map("template_id") @db.Uuid
+  dueAt               DateTime                @map("due_at") @db.Timestamptz(6)
+  assignedType        AssignedType            @map("assigned_type")
+  assignedRef         String?                 @map("assigned_ref") @db.Uuid
+  assignedRole        StaffRole?              @map("assigned_role")
+  assignedShiftId     String?                 @map("assigned_shift_id") @db.Uuid
+  status              ChecklistInstanceStatus @default(pending)
+  submittedBy         String?                 @map("submitted_by") @db.Uuid
+  submittedAt         DateTime?               @map("submitted_at") @db.Timestamptz(6)
+  approvedBy          String?                 @map("approved_by") @db.Uuid
+  approvedAt          DateTime?               @map("approved_at") @db.Timestamptz(6)
+  reopenRequestedBy   String?                 @map("reopen_requested_by") @db.Uuid
+  reopenRequestedAt   DateTime?               @map("reopen_requested_at") @db.Timestamptz(6)
+  reopenRequestReason String?                 @map("reopen_request_reason")
+  reopenedBy          String?                 @map("reopened_by") @db.Uuid
+  reopenedAt          DateTime?               @map("reopened_at") @db.Timestamptz(6)
+  createdAt           DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch          Branch                  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  template        ChecklistTemplate?      @relation(fields: [templateId], references: [id])
+  assignedStaff   Staff?                  @relation(fields: [assignedRef], references: [id])
+  assignedShift   Shift?                  @relation(fields: [assignedShiftId], references: [id])
+  submitter       User?                   @relation("ChecklistSubmittedBy", fields: [submittedBy], references: [id])
+  approver        User?                   @relation("ChecklistApprovedBy", fields: [approvedBy], references: [id])
+  reopenRequester User?                   @relation("ChecklistReopenRequestedBy", fields: [reopenRequestedBy], references: [id])
+  reopener        User?                   @relation("ChecklistReopenedBy", fields: [reopenedBy], references: [id])
+  items           ChecklistInstanceItem[]
+
+  @@index([branchId, status, dueAt])
+  @@index([assignedRef])
+  @@index([templateId])
+  @@index([branchId, reopenRequestedAt])
+  @@map("checklist_instances")
+}
+
+model ChecklistInstanceItem {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId       String    @map("branch_id") @db.Uuid
+  instanceId     String    @map("instance_id") @db.Uuid
+  templateItemId String?   @map("template_item_id") @db.Uuid
+  description    String
+  requiresPhoto  Boolean   @default(false) @map("requires_photo")
+  requiresNote   Boolean   @default(false) @map("requires_note")
+  isCompleted    Boolean   @default(false) @map("is_completed")
+  completedBy    String?   @map("completed_by") @db.Uuid
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  photoUrl       String?   @map("photo_url")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch       Branch                 @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  instance     ChecklistInstance      @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  templateItem ChecklistTemplateItem? @relation(fields: [templateItemId], references: [id])
+  completer    User?                  @relation(fields: [completedBy], references: [id])
+
+  @@index([instanceId])
+  @@map("checklist_instance_items")
+}
+
+// ─────────────── Opening Checklist V1 ───────────────
+// Deliberately separate from ChecklistTemplate/ChecklistInstance above, which model a
+// richer recurrence-generated, multi-target, submit-and-approve workflow this feature
+// doesn't need. This is just: a per-branch item list grouped by department, and a daily
+// completion record per item — no templates-per-day generation, no approval gate.
+
+enum ChecklistDepartment {
+  kitchen
+  cashier
+  dining
+  cleaning
+
+  @@map("checklist_department_enum")
+}
+
+model OpeningChecklistItem {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String              @map("branch_id") @db.Uuid
+  title      String              @db.VarChar(200)
+  department ChecklistDepartment
+  sortOrder  Int                 @default(0) @map("sort_order")
+  createdBy  String              @map("created_by") @db.Uuid
+  createdAt  DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch      Branch                       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator     User                         @relation(fields: [createdBy], references: [id])
+  completions OpeningChecklistCompletion[]
+
+  @@index([branchId, department, sortOrder])
+  @@map("opening_checklist_items")
+}
+
+model OpeningChecklistCompletion {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String   @map("branch_id") @db.Uuid
+  itemId      String   @map("item_id") @db.Uuid
+  date        DateTime @db.Date
+  completedBy String   @map("completed_by") @db.Uuid
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamptz(6)
+
+  branch    Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  item      OpeningChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  completer User                 @relation(fields: [completedBy], references: [id])
+
+  @@unique([itemId, date])
+  @@index([branchId, date])
+  @@map("opening_checklist_completions")
+}
+
+// ─────────────── Closing Checklist V1 ───────────────
+// Deliberately a separate model from OpeningChecklistItem/Completion above rather than
+// a shared table with a type discriminator — kept fully independent so neither feature
+// touches the other's schema, data, or code path.
+
+model ClosingChecklistItem {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String              @map("branch_id") @db.Uuid
+  title      String              @db.VarChar(200)
+  department ChecklistDepartment
+  sortOrder  Int                 @default(0) @map("sort_order")
+  createdBy  String              @map("created_by") @db.Uuid
+  createdAt  DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch      Branch                       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator     User                         @relation(fields: [createdBy], references: [id])
+  completions ClosingChecklistCompletion[]
+
+  @@index([branchId, department, sortOrder])
+  @@map("closing_checklist_items")
+}
+
+model ClosingChecklistCompletion {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String   @map("branch_id") @db.Uuid
+  itemId      String   @map("item_id") @db.Uuid
+  date        DateTime @db.Date
+  completedBy String   @map("completed_by") @db.Uuid
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamptz(6)
+
+  branch    Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  item      ClosingChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  completer User                 @relation(fields: [completedBy], references: [id])
+
+  @@unique([itemId, date])
+  @@index([branchId, date])
+  @@map("closing_checklist_completions")
+}
+
+// ─────────────── Daily Task V1 ───────────────
+// A separate module from Opening/Closing Checklist above, not merged with them — same
+// "flat per-branch item list + daily completion" shape, but assigned by branch only
+// (no department split, no recurrence rule): every active staff member sees every
+// active task. Kept fully independent so neither feature's schema, data, or code path
+// touches the other's, matching the same reasoning already applied between Opening and
+// Closing Checklist.
+
+model DailyTask {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  title     String   @db.VarChar(200)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch      Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator     User                  @relation("DailyTaskCreatedBy", fields: [createdBy], references: [id])
+  completions DailyTaskCompletion[]
+
+  @@index([branchId, sortOrder])
+  @@map("daily_tasks")
+}
+
+model DailyTaskCompletion {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String   @map("branch_id") @db.Uuid
+  taskId      String   @map("task_id") @db.Uuid
+  date        DateTime @db.Date
+  completedBy String   @map("completed_by") @db.Uuid
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamptz(6)
+
+  branch    Branch    @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  task      DailyTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completer User      @relation("DailyTaskCompletedBy", fields: [completedBy], references: [id])
+
+  @@unique([taskId, date])
+  @@index([branchId, date])
+  @@map("daily_task_completions")
+}
+
+model SopCategory {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  name      String   @db.VarChar(150)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  sops   Sop[]
+
+  @@unique([branchId, name])
+  @@map("sop_categories")
+}
+
+model Sop {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String   @map("branch_id") @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+  title      String   @db.VarChar(200)
+  content    String?
+  createdBy  String   @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch           Branch                  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  category         SopCategory             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  creator          User                    @relation(fields: [createdBy], references: [id])
+  attachments      SopAttachment[]
+  acknowledgements SopAcknowledgement[]
+  templateItems    ChecklistTemplateItem[]
+
+  @@index([branchId, categoryId])
+  @@map("sops")
+}
+
+model SopAttachment {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String         @map("branch_id") @db.Uuid
+  sopId     String         @map("sop_id") @db.Uuid
+  fileUrl   String         @map("file_url")
+  type      AttachmentType
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  sop    Sop    @relation(fields: [sopId], references: [id], onDelete: Cascade)
+
+  @@index([sopId])
+  @@map("sop_attachments")
+}
+
+model SopAcknowledgement {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId       String   @map("branch_id") @db.Uuid
+  sopId          String   @map("sop_id") @db.Uuid
+  staffId        String   @map("staff_id") @db.Uuid
+  acknowledgedAt DateTime @default(now()) @map("acknowledged_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  sop    Sop    @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  staff  Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([sopId, staffId])
+  @@map("sop_acknowledgements")
+}
+
+// ───────────────────────── Announcements ─────────────────────────
+
+model Announcement {
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId      String             @map("branch_id") @db.Uuid
+  title         String             @db.VarChar(200)
+  body          String
+  createdBy     String             @map("created_by") @db.Uuid
+  targetType    AnnouncementTarget @map("target_type")
+  targetRole    StaffRole?         @map("target_role")
+  targetStaffId String?            @map("target_staff_id") @db.Uuid
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch      Branch             @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator     User               @relation(fields: [createdBy], references: [id])
+  targetStaff Staff?             @relation(fields: [targetStaffId], references: [id], onDelete: Cascade)
+  reads       AnnouncementRead[]
+
+  @@index([branchId, createdAt(sort: Desc)])
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId       String   @map("branch_id") @db.Uuid
+  announcementId String   @map("announcement_id") @db.Uuid
+  staffId        String   @map("staff_id") @db.Uuid
+  readAt         DateTime @default(now()) @map("read_at") @db.Timestamptz(6)
+
+  branch       Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  staff        Staff        @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, staffId])
+  @@map("announcement_reads")
+}
+
+// ───────────────────────────── Inventory ─────────────────────────────
+// V1: a live, directly-editable balance per item — no stock_transactions ledger yet.
+// currentQuantity is the source of truth staff edit directly; "low stock" is computed
+// at read time (currentQuantity <= minAlertLevel), mirroring how checklist_instances
+// computes "overdue" rather than storing it. A future movement ledger can be added
+// additively without changing this table's shape.
+
+model StockItem {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId        String   @map("branch_id") @db.Uuid
+  name            String   @db.VarChar(150)
+  unit            String?  @db.VarChar(20)
+  currentQuantity Decimal  @default(0) @map("current_quantity") @db.Decimal(10, 2)
+  minAlertLevel   Decimal  @default(0) @map("min_alert_level") @db.Decimal(10, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdBy       String   @map("created_by") @db.Uuid
+  updatedBy       String?  @map("updated_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch  Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator User   @relation("StockItemCreatedBy", fields: [createdBy], references: [id])
+  updater User?  @relation("StockItemUpdatedBy", fields: [updatedBy], references: [id])
+
+  @@unique([branchId, name])
+  @@index([branchId, isActive])
+  @@map("stock_items")
+}
+
+// ─────────────── Daily Financial Record V1 ───────────────
+// Deliberately separate from the fuller Finance module below (IncomeEntry/Expense/
+// Account/CashFlowTransaction/etc.), which models a richer ledger — accounts,
+// receipts, paid/unpaid status, recurring templates — this V1 doesn't need. This is
+// just: one manual daily snapshot per branch (sales copied in from Niagawan, a cash
+// count) plus a flat list of expenses against it, categorized from a fixed list.
+// totalExpenses/netCashFlow/cashDifference are computed at read time, not stored —
+// same "isLow"/"isCompleted" pattern as stock_items/daily_task_completions.
+
+enum DailyExpenseCategory {
+  ingredients
+  packaging
+  utilities
+  transport
+  marketing
+  misc
+
+  @@map("daily_expense_category_enum")
+}
+
+model DailyFinancialRecord {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId     String   @map("branch_id") @db.Uuid
+  date         DateTime @db.Date
+  totalSales   Decimal  @default(0) @map("total_sales") @db.Decimal(14, 2)
+  expectedCash Decimal  @default(0) @map("expected_cash") @db.Decimal(14, 2)
+  actualCash   Decimal  @default(0) @map("actual_cash") @db.Decimal(14, 2)
+  notes        String?
+  createdBy    String   @map("created_by") @db.Uuid
+  updatedBy    String?  @map("updated_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch   Branch        @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  creator  User          @relation("DailyFinancialRecordCreatedBy", fields: [createdBy], references: [id])
+  updater  User?         @relation("DailyFinancialRecordUpdatedBy", fields: [updatedBy], references: [id])
+  expenses DailyExpense[]
+
+  @@unique([branchId, date])
+  @@index([branchId, date])
+  @@map("daily_financial_records")
+}
+
+model DailyExpense {
+  id        String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String               @map("branch_id") @db.Uuid
+  recordId  String               @map("record_id") @db.Uuid
+  title     String               @db.VarChar(200)
+  amount    Decimal              @db.Decimal(12, 2)
+  category  DailyExpenseCategory
+  createdBy String               @map("created_by") @db.Uuid
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch  Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  record  DailyFinancialRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  creator User                 @relation("DailyExpenseCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([recordId])
+  @@index([branchId, createdAt])
+  @@map("daily_expenses")
+}
+
+// ─────────────── Daily Closing V1 ───────────────
+// Deliberately separate from the fuller MonthlyClosing module below (COGS, payroll,
+// platform commissions, gross/net profit, checklist-status aggregation, lock/reopen
+// with immutable snapshots, document attachments) — this V1 doesn't need any of
+// that. This is just a record of whether a given day's DailyFinancialRecord has been
+// reviewed and closed, by whom, and when. No figures are stored here — Sales/
+// Expenses/Net/Cash Difference are always read live from daily_financial_records via
+// lib/financials/queries.ts, so there's nothing to duplicate or drift out of sync.
+// Soft close only: closing a day does not block further edits to that day's
+// financial record or expenses in V1.
+
+model DailyClosing {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String    @map("branch_id") @db.Uuid
+  date       DateTime  @db.Date
+  isClosed   Boolean   @default(false) @map("is_closed")
+  closedBy   String?   @map("closed_by") @db.Uuid
+  closedAt   DateTime? @map("closed_at") @db.Timestamptz(6)
+  reopenedBy String?   @map("reopened_by") @db.Uuid
+  reopenedAt DateTime? @map("reopened_at") @db.Timestamptz(6)
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  closer   User?  @relation("DailyClosingClosedBy", fields: [closedBy], references: [id])
+  reopener User?  @relation("DailyClosingReopenedBy", fields: [reopenedBy], references: [id])
+
+  @@unique([branchId, date])
+  @@map("daily_closings")
+}
+
+// ───────────────────────────── Finance ─────────────────────────────
+
+model IncomeEntry {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId        String        @map("branch_id") @db.Uuid
+  date            DateTime      @db.Date
+  type            IncomeType
+  channel         IncomeChannel @default(walk_in)
+  amount          Decimal       @db.Decimal(14, 2)
+  status          IncomeStatus  @default(received)
+  accountId       String        @map("account_id") @db.Uuid
+  referenceNumber String?       @map("reference_number") @db.VarChar(100)
+  receiptImageUrl String?       @map("receipt_image_url")
+  notes           String?
+  enteredBy       String        @map("entered_by") @db.Uuid
+  deletedAt       DateTime?     @map("deleted_at") @db.Timestamptz(6)
+  deletedBy       String?       @map("deleted_by") @db.Uuid
+  deletedReason   String?       @map("deleted_reason")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch               Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  account              Account               @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  enterer              User                  @relation("IncomeEnteredBy", fields: [enteredBy], references: [id])
+  deleter              User?                 @relation("IncomeDeletedBy", fields: [deletedBy], references: [id])
+  cashFlowTransactions CashFlowTransaction[]
+
+  @@index([branchId, date])
+  @@index([branchId, status])
+  @@index([branchId, deletedAt])
+  @@map("income_entries")
+}
+
+model ExpenseCategory {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  name      String   @db.VarChar(100)
+  isSystem  Boolean  @default(false) @map("is_system")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch           Branch            @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  expenses         Expense[]
+  expenseTemplates ExpenseTemplate[]
+
+  @@unique([branchId, name])
+  @@map("expense_categories")
+}
+
+model Expense {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId         String        @map("branch_id") @db.Uuid
+  categoryId       String        @map("category_id") @db.Uuid
+  date             DateTime      @db.Date
+  amount           Decimal       @db.Decimal(12, 2)
+  description      String?
+  accountId        String        @map("account_id") @db.Uuid
+  referenceNumber  String?       @map("reference_number") @db.VarChar(100)
+  receiptImageUrl  String?       @map("receipt_image_url")
+  status           ExpenseStatus @default(unpaid)
+  isRecurring      Boolean       @default(false) @map("is_recurring")
+  sourceTemplateId String?       @map("source_template_id") @db.Uuid
+  enteredBy        String        @map("entered_by") @db.Uuid
+  deletedAt        DateTime?     @map("deleted_at") @db.Timestamptz(6)
+  deletedBy        String?       @map("deleted_by") @db.Uuid
+  deletedReason    String?       @map("deleted_reason")
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch               Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  category             ExpenseCategory       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  account              Account               @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  sourceTemplate       ExpenseTemplate?      @relation(fields: [sourceTemplateId], references: [id])
+  enterer              User                  @relation("ExpenseEnteredBy", fields: [enteredBy], references: [id])
+  deleter              User?                 @relation("ExpenseDeletedBy", fields: [deletedBy], references: [id])
+  cashFlowTransactions CashFlowTransaction[]
+
+  @@index([branchId, date])
+  @@index([branchId, status])
+  @@index([branchId, deletedAt])
+  @@map("expenses")
+}
+
+model ExpenseTemplate {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String   @map("branch_id") @db.Uuid
+  categoryId  String   @map("category_id") @db.Uuid
+  description String?
+  amount      Decimal  @db.Decimal(12, 2)
+  dayOfMonth  Int      @map("day_of_month") @db.SmallInt
+  isActive    Boolean  @default(true) @map("is_active")
+  createdBy   String   @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch   Branch          @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  creator  User            @relation(fields: [createdBy], references: [id])
+  expenses Expense[]
+
+  @@index([branchId, isActive])
+  @@map("expense_templates")
+}
+
+model Account {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId       String      @map("branch_id") @db.Uuid
+  name           String      @db.VarChar(100)
+  type           AccountType
+  currentBalance Decimal     @default(0) @map("current_balance") @db.Decimal(14, 2)
+  isActive       Boolean     @default(true) @map("is_active")
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch               Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  incomeEntries        IncomeEntry[]
+  expenses             Expense[]
+  cashFlowTransactions CashFlowTransaction[] @relation("CashFlowAccount")
+  cashFlowCounterpart  CashFlowTransaction[] @relation("CashFlowCounterpartAccount")
+
+  @@index([branchId])
+  @@map("accounts")
+}
+
+model CashFlowTransaction {
+  id                   String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId             String       @map("branch_id") @db.Uuid
+  accountId            String       @map("account_id") @db.Uuid
+  type                 CashFlowType
+  amount               Decimal      @db.Decimal(14, 2)
+  relatedIncomeId      String?      @map("related_income_id") @db.Uuid
+  relatedExpenseId     String?      @map("related_expense_id") @db.Uuid
+  counterpartAccountId String?      @map("counterpart_account_id") @db.Uuid
+  isAutoGenerated      Boolean      @default(false) @map("is_auto_generated")
+  referenceNumber      String?      @map("reference_number") @db.VarChar(100)
+  receiptImageUrl      String?      @map("receipt_image_url")
+  date                 DateTime     @db.Date
+  notes                String?
+  enteredBy            String       @map("entered_by") @db.Uuid
+  deletedAt            DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  deletedBy            String?      @map("deleted_by") @db.Uuid
+  deletedReason        String?      @map("deleted_reason")
+  createdAt            DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch             Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  account            Account      @relation("CashFlowAccount", fields: [accountId], references: [id], onDelete: Restrict)
+  counterpartAccount Account?     @relation("CashFlowCounterpartAccount", fields: [counterpartAccountId], references: [id], onDelete: Restrict)
+  relatedIncome      IncomeEntry? @relation(fields: [relatedIncomeId], references: [id])
+  relatedExpense     Expense?     @relation(fields: [relatedExpenseId], references: [id])
+  enterer            User         @relation("CashFlowEnteredBy", fields: [enteredBy], references: [id])
+  deleter            User?        @relation("CashFlowDeletedBy", fields: [deletedBy], references: [id])
+
+  @@unique([relatedIncomeId])
+  @@unique([relatedExpenseId])
+  @@index([branchId, date])
+  @@index([accountId, date])
+  @@map("cash_flow_transactions")
+}
+
+model PayrollSettings {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId            String   @unique @map("branch_id") @db.Uuid
+  standardHoursPerDay Decimal  @default(8.00) @map("standard_hours_per_day") @db.Decimal(4, 2)
+  standardDaysPerWeek Int      @default(6) @map("standard_days_per_week") @db.SmallInt
+  overtimeMultiplier  Decimal  @default(1.50) @map("overtime_multiplier") @db.Decimal(4, 2)
+  payPeriod           String   @default("monthly") @map("pay_period") @db.VarChar(20)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@map("payroll_settings")
+}
+
+model PayrollRecord {
+  id                    String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId              String        @map("branch_id") @db.Uuid
+  staffId               String        @map("staff_id") @db.Uuid
+  month                 DateTime      @db.Date
+  basicSalary           Decimal       @default(0) @map("basic_salary") @db.Decimal(12, 2)
+  computedRegularHours  Decimal       @default(0) @map("computed_regular_hours") @db.Decimal(7, 2)
+  computedOvertimeHours Decimal       @default(0) @map("computed_overtime_hours") @db.Decimal(7, 2)
+  computedHourlyWages   Decimal       @default(0) @map("computed_hourly_wages") @db.Decimal(12, 2)
+  computedOvertime      Decimal       @default(0) @map("computed_overtime") @db.Decimal(12, 2)
+  bonuses               Decimal       @default(0) @db.Decimal(12, 2)
+  allowances            Decimal       @default(0) @db.Decimal(12, 2)
+  deductions            Decimal       @default(0) @db.Decimal(12, 2)
+  advances              Decimal       @default(0) @db.Decimal(12, 2)
+  netSalary             Decimal       @map("net_salary") @db.Decimal(12, 2)
+  status                PayrollStatus @default(draft)
+  finalizedBy           String?       @map("finalized_by") @db.Uuid
+  finalizedAt           DateTime?     @map("finalized_at") @db.Timestamptz(6)
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch    Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff     Staff  @relation(fields: [staffId], references: [id], onDelete: Restrict)
+  finalizer User?  @relation(fields: [finalizedBy], references: [id])
+
+  @@unique([staffId, month])
+  @@index([branchId, month, status])
+  @@map("payroll_records")
+}
+
+// ───────────────────────── Monthly Closing ─────────────────────────
+
+model MonthlyClosing {
+  id                       String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId                 String        @map("branch_id") @db.Uuid
+  month                    DateTime      @db.Date
+  status                   ClosingStatus @default(draft)
+  totalSales               Decimal       @default(0) @map("total_sales") @db.Decimal(14, 2)
+  otherIncome              Decimal       @default(0) @map("other_income") @db.Decimal(14, 2)
+  cogs                     Decimal       @default(0) @db.Decimal(14, 2)
+  payrollTotal             Decimal       @default(0) @map("payroll_total") @db.Decimal(14, 2)
+  operatingExpensesTotal   Decimal       @default(0) @map("operating_expenses_total") @db.Decimal(14, 2)
+  platformCommissionsTotal Decimal       @default(0) @map("platform_commissions_total") @db.Decimal(14, 2)
+  grossProfit              Decimal       @default(0) @map("gross_profit") @db.Decimal(14, 2)
+  netProfit                Decimal       @default(0) @map("net_profit") @db.Decimal(14, 2)
+  closingBalances          Json          @default("{}") @map("closing_balances")
+  unpaidExpensesTotal      Decimal       @default(0) @map("unpaid_expenses_total") @db.Decimal(14, 2)
+  ownerWithdrawalsTotal    Decimal       @default(0) @map("owner_withdrawals_total") @db.Decimal(14, 2)
+  notes                    String?
+  checklistStatusSummary   Json          @default("{}") @map("checklist_status_summary")
+  lockedBy                 String?       @map("locked_by") @db.Uuid
+  lockedAt                 DateTime?     @map("locked_at") @db.Timestamptz(6)
+  reopenedBy               String?       @map("reopened_by") @db.Uuid
+  reopenedAt               DateTime?     @map("reopened_at") @db.Timestamptz(6)
+  reopenReason             String?       @map("reopen_reason")
+  createdAt                DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  branch    Branch                   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  locker    User?                    @relation("ClosingLockedBy", fields: [lockedBy], references: [id])
+  reopener  User?                    @relation("ClosingReopenedBy", fields: [reopenedBy], references: [id])
+  snapshots MonthlyClosingSnapshot[]
+  documents MonthlyClosingDocument[]
+
+  @@unique([branchId, month])
+  @@map("monthly_closings")
+}
+
+model MonthlyClosingSnapshot {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  closingId String   @map("closing_id") @db.Uuid
+  snapshot  Json
+  lockedBy  String   @map("locked_by") @db.Uuid
+  lockedAt  DateTime @map("locked_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch  Branch         @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  closing MonthlyClosing @relation(fields: [closingId], references: [id], onDelete: Cascade)
+  locker  User           @relation(fields: [lockedBy], references: [id])
+
+  @@index([closingId, lockedAt])
+  @@map("monthly_closing_snapshots")
+}
+
+model MonthlyClosingDocument {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String   @map("branch_id") @db.Uuid
+  closingId  String   @map("closing_id") @db.Uuid
+  fileUrl    String   @map("file_url")
+  type       String?  @db.VarChar(50)
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch   Branch         @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  closing  MonthlyClosing @relation(fields: [closingId], references: [id], onDelete: Cascade)
+  uploader User           @relation(fields: [uploadedBy], references: [id])
+
+  @@index([closingId])
+  @@map("monthly_closing_documents")
+}

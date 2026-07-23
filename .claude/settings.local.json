@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"console.log\\(require\\('c:/Users/User/tenderista-app/node_modules/next/package.json'\\).version\\)\")",
+      "PowerShell(node -v)",
+      "PowerShell(npm -v)",
+      "PowerShell(Get-Command psql -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command docker -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command pg_config -ErrorAction SilentlyContinue)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Read(//c/Users/User/AppData/Roaming/**)",
+      "Bash(where.exe node *)",
+      "Bash(where.exe npm *)",
+      "WebFetch(domain:pris.ly)",
+      "WebFetch(domain:www.prisma.io)",
+      "PowerShell(Get-Command winget -ErrorAction SilentlyContinue)",
+      "PowerShell(winget list --id PostgreSQL.PostgreSQL 2>&1)",
+      "PowerShell(winget search PostgreSQL --source winget 2>&1)",
+      "Bash(curl -s http://localhost:3000/login)",
+      "Bash(curl -s http://localhost:3000/admin/login)",
+      "Read(//tmp/**)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"ESLint exit: $?\")"
+    ]
+  }
+}
