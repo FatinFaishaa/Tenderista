@@ -42,7 +42,7 @@ export type TenantContext = {
  */
 export async function withTenantContext<T>(
   context: TenantContext,
-  fn: (tx: Prisma.TransactionClient) => Promise<T>
+  fn: (tx: Prisma.TransactionClient) => T | PromiseLike<T>
 ): Promise<T> {
   return prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe(
@@ -51,6 +51,6 @@ export async function withTenantContext<T>(
       context.branchId ?? "",
       context.platformAdminId ?? ""
     );
-    return fn(tx);
+    return await fn(tx);
   });
 }
