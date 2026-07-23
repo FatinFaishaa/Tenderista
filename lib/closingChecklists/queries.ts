@@ -250,3 +250,69 @@ export async function moveClosingChecklistItem(
     });
   });
 }
+
+export type ClosingChecklistSubmissionRow = {
+  id: string;
+  photoUrl: string;
+  submittedByName: string;
+  submittedAt: Date;
+};
+
+export async function getTodaysClosingSubmission(
+  branchId: string,
+  userId: string,
+  department: ChecklistDepartmentValue,
+  timezone: string
+): Promise<ClosingChecklistSubmissionRow | null> {
+  const targetDate = getBranchLocalDate(timezone);
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const submission = await tx.closingChecklistSubmission.findUnique({
+      where: { branchId_department_date: { branchId, department, date: targetDate } },
+      include: { submitter: { select: { name: true } } },
+    });
+    if (!submission) return null;
+    return {
+      id: submission.id,
+      photoUrl: submission.photoUrl,
+      submittedByName: submission.submitter.name,
+      submittedAt: submission.submittedAt,
+    };
+  });
+}
+
+export class ClosingChecklistIncompleteError extends Error {}
+export class ClosingChecklistAlreadySubmittedError extends Error {}
+
+export async function submitClosingChecklistPhoto(
+  branchId: string,
+  userId: string,
+  department: ChecklistDepartmentValue,
+  timezone: string,
+  photoPath: string
+): Promise<{ id: string }> {
+  const targetDate = getBranchLocalDate(timezone);
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const items = await tx.closingChecklistItem.findMany({
+      where: { branchId, department },
+      include: { completions: { where: { date: targetDate } } },
+    });
+    const incomplete = items.some((item) => item.completions.length === 0);
+    if (incomplete) {
+      throw new ClosingChecklistIncompleteError(
+        "All checklist items must be checked off before submitting a photo."
+      );
+    }
+    const existing = await tx.closingChecklistSubmission.findUnique({
+      where: { branchId_department_date: { branchId, department, date: targetDate } },
+    });
+    if (existing) {
+      throw new ClosingChecklistAlreadySubmittedError(
+        "A photo has already been submitted for this department today."
+      );
+    }
+    const submission = await tx.closingChecklistSubmission.create({
+      data: { branchId, department, date: targetDate, photoUrl: photoPath, submittedBy: userId },
+    });
+    return { id: submission.id };
+  });
+}

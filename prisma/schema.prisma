@@ -303,6 +303,7 @@ model Branch {
   dailyFinancialRecords       DailyFinancialRecord[]
   dailyExpenses               DailyExpense[]
   dailyClosings               DailyClosing[]
+  closingChecklistSubmissions ClosingChecklistSubmission[]
 
   @@map("branches")
 }
@@ -413,6 +414,7 @@ model User {
   dailyExpensesCreated              DailyExpense[]               @relation("DailyExpenseCreatedBy")
   dailyClosingsClosed               DailyClosing[]               @relation("DailyClosingClosedBy")
   dailyClosingsReopened             DailyClosing[]               @relation("DailyClosingReopenedBy")
+  closingChecklistSubmissions       ClosingChecklistSubmission[]
 
   @@map("users")
 }
@@ -1368,4 +1370,21 @@ model MonthlyClosingDocument {
 
   @@index([closingId])
   @@map("monthly_closing_documents")
+}
+
+model ClosingChecklistSubmission {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String              @map("branch_id") @db.Uuid
+  department  ChecklistDepartment
+  date        DateTime            @db.Date
+  photoUrl    String              @map("photo_url")
+  submittedBy String              @map("submitted_by") @db.Uuid
+  submittedAt DateTime            @default(now()) @map("submitted_at") @db.Timestamptz(6)
+
+  branch    Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  submitter User   @relation(fields: [submittedBy], references: [id])
+
+  @@unique([branchId, department, date])
+  @@index([branchId, date])
+  @@map("closing_checklist_submissions")
 }
