@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { DailyExpenseCategory } from "@prisma/client";
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -33,7 +34,7 @@ export const dailyExpenseCategories = [
   "misc",
 ] as const;
 
-export const DAILY_EXPENSE_CATEGORY_LABELS: Record<(typeof dailyExpenseCategories)[number], string> = {
+export const DAILY_EXPENSE_CATEGORY_LABELS: Record<DailyExpenseCategory, string> = {
   ingredients: "Ingredients",
   packaging: "Packaging",
   utilities: "Utilities",
