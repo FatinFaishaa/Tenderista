@@ -22,7 +22,14 @@ export async function listAnnouncements(
       include: { creator: { select: { name: true } } },
     });
 
-        return rows.map((row) => ({
+    return rows.map((row: {
+      id: string;
+      title: string;
+      body: string;
+      createdAt: Date;
+      updatedAt: Date;
+      creator: { name: string };
+    }) => ({
       id: row.id,
       title: row.title,
       message: row.body,
