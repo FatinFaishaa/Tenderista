@@ -1,5 +1,4 @@
 import { withTenantContext } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
 
 export type AnnouncementListItem = {
   id: string;
@@ -16,7 +15,7 @@ export async function listAnnouncements(
   branchId: string,
   userId: string
 ): Promise<AnnouncementListItem[]> {
-  return withTenantContext({ userId, branchId }, async (tx: Prisma.TransactionClient) => {
+  return withTenantContext({ userId, branchId }, async (tx) => {
     const rows = await tx.announcement.findMany({
       where: { branchId },
       orderBy: { createdAt: "desc" },
