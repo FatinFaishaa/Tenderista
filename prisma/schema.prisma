@@ -841,8 +841,9 @@ model ClosingChecklistCompletion {
 model DailyTask {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   branchId  String   @map("branch_id") @db.Uuid
-  title     String   @db.VarChar(200)
-  sortOrder Int      @default(0) @map("sort_order")
+  title      String   @db.VarChar(200)
+  isPriority Boolean  @default(false) @map("is_priority")
+  sortOrder  Int      @default(0) @map("sort_order")
   createdBy String   @map("created_by") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)

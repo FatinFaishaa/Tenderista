@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -9,20 +8,19 @@ import { FormError } from "@/components/ui/FormError";
 type Props = {
   branchSlug: string;
   taskId?: string;
-  initialValues?: { title: string };
+  initialValues?: { title: string; isPriority?: boolean };
 };
 
 export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [isPriority, setIsPriority] = useState(initialValues?.isPriority ?? false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   const isEditing = Boolean(taskId);
   const endpoint = isEditing
     ? `/api/branches/${branchSlug}/daily-tasks/${taskId}`
     : `/api/branches/${branchSlug}/daily-tasks`;
-
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -31,7 +29,7 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
       const res = await fetch(endpoint, {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, isPriority }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -44,7 +42,6 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
       setLoading(false);
     }
   }
-
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <FormError message={error} />
@@ -58,6 +55,15 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
           required
         />
       </div>
+      <label className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <input
+          type="checkbox"
+          checked={isPriority}
+          onChange={(e) => setIsPriority(e.target.checked)}
+          className="h-5 w-5 accent-brand-maroon"
+        />
+        ⭐ Tandakan sebagai Penting
+      </label>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>
           {loading ? "Saving…" : isEditing ? "Save Changes" : "Add Task"}

@@ -12,6 +12,7 @@ export type DailyTaskRow = {
   id: string;
   title: string;
   sortOrder: number;
+  isPriority: boolean;
 };
 
 /** For the Owner/Manager management page — every task, in sortOrder. */
@@ -21,7 +22,7 @@ export async function listDailyTasks(branchId: string, userId: string): Promise<
       where: { branchId },
       orderBy: { sortOrder: "asc" },
     });
-    return tasks.map((t) => ({ id: t.id, title: t.title, sortOrder: t.sortOrder }));
+    return tasks.map((t) => ({ id: t.id, title: t.title, sortOrder: t.sortOrder, isPriority: t.isPriority }));
   });
 }
 
@@ -33,7 +34,7 @@ export async function getDailyTaskById(
   return withTenantContext({ userId, branchId }, async (tx) => {
     const task = await tx.dailyTask.findFirst({ where: { id, branchId } });
     if (!task) return null;
-    return { id: task.id, title: task.title, sortOrder: task.sortOrder };
+    return { id: task.id, title: task.title, sortOrder: task.sortOrder, isPriority: task.isPriority };
   });
 }
 
@@ -76,6 +77,7 @@ export async function getTodaysDailyTasks(
         id: task.id,
         title: task.title,
         sortOrder: task.sortOrder,
+        isPriority: task.isPriority,
         isCompleted: Boolean(completion),
         completedByName: completion?.completer.name ?? null,
         completedAt: completion?.completedAt ?? null,
@@ -118,7 +120,7 @@ export async function toggleTodaysCompletion(
 export async function createDailyTask(
   branchId: string,
   userId: string,
-  input: { title: string }
+  input: { title: string; isPriority?: boolean }
 ): Promise<{ id: string }> {
   return withTenantContext({ userId, branchId }, async (tx) => {
     const last = await tx.dailyTask.findFirst({
@@ -130,6 +132,7 @@ export async function createDailyTask(
       data: {
         branchId,
         title: input.title,
+        isPriority: input.isPriority ?? false,
         sortOrder: (last?.sortOrder ?? -1) + 1,
         createdBy: userId,
       },
@@ -143,12 +146,12 @@ export async function updateDailyTask(
   branchId: string,
   userId: string,
   id: string,
-  input: { title: string }
+  input: { title: string; isPriority?: boolean }
 ): Promise<void> {
   const result = await withTenantContext({ userId, branchId }, (tx) =>
     tx.dailyTask.updateMany({
       where: { id, branchId },
-      data: { title: input.title },
+      data: { title: input.title, isPriority: input.isPriority ?? false },
     })
   );
   if (result.count === 0) throw new DailyTaskNotFoundError("Task not found.");

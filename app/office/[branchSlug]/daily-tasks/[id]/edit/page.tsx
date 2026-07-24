@@ -24,7 +24,7 @@ export default async function EditDailyTaskPage({
       <h1 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
         Edit Task
       </h1>
-      <DailyTaskForm branchSlug={branchSlug} taskId={task.id} initialValues={{ title: task.title }} />
+      <DailyTaskForm branchSlug={branchSlug} taskId={task.id} initialValues={{ title: task.title, isPriority: task.isPriority }} />
     </div>
   );
 }
