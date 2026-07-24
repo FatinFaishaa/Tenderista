@@ -325,6 +325,7 @@ export async function getMyPublishedScheduleForWeek(
 
 export type DailyRosterCardRow = DailyRosterRow & {
   avatarEmoji: string;
+  avatarImage: string | null;
   jobPosition: string;
   department: string | null;
 };
@@ -343,7 +344,7 @@ export async function getDailyRosterWithProfile(
   return withTenantContext({ userId, branchId }, async (tx) => {
     const staffList = await tx.staff.findMany({
       where: { branchId, status: "active" },
-      include: { user: { select: { avatarEmoji: true } } },
+      include: { user: { select: { avatarEmoji: true, avatarImage: true } } },
     });
     const byStaffId = new Map(staffList.map((s) => [s.id, s]));
 
@@ -352,6 +353,7 @@ export async function getDailyRosterWithProfile(
       return {
         ...row,
         avatarEmoji: staff?.user.avatarEmoji ?? "😊",
+        avatarImage: staff?.user.avatarImage ?? null,
         jobPosition: staff?.jobPosition ?? "",
         department: staff?.department ?? null,
       };

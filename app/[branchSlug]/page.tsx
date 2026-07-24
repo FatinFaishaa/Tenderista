@@ -4,6 +4,7 @@ import { Clock, ClipboardCheck, ListTodo, Users, Megaphone, Sunrise, Moon, Chevr
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getMyProfile } from "@/lib/staff/queries";
+import { Avatar } from "@/components/staff/Avatar";
 import { getMyTodaysAttendance } from "@/lib/attendance/queries";
 import { getTodaysDailyTasks } from "@/lib/dailyTasks/queries";
 import { getProgressByDepartment } from "@/lib/checklists/queries";
@@ -54,9 +55,7 @@ export default async function StaffHomePage({
     <div className="space-y-5">
       {/* Greeting header */}
       <div className="flex items-center gap-3">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-3xl shadow-sm">
-          {profile.avatarEmoji}
-        </span>
+        <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} className="shadow-sm" />
         <div>
           <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
             Hai, {profile.name.split(" ")[0]}! 👋

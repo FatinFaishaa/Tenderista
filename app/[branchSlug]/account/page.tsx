@@ -6,9 +6,12 @@ import {
   getMyFullProfile,
   getAvatarEmojiOptions,
   getMyEmploymentInfo,
+  AVATAR_IMAGE_OPTIONS,
 } from "@/lib/staff/queries";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { AvatarEmojiPicker } from "@/components/staff/AvatarEmojiPicker";
+import { AvatarImagePicker } from "@/components/staff/AvatarImagePicker";
+import { Avatar } from "@/components/staff/Avatar";
 import { MyProfileForm } from "@/components/staff/MyProfileForm";
 
 const MENU_ITEMS = [
@@ -49,11 +52,15 @@ export default async function AccountPage({
       <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Akaun</h1>
 
       <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-cream text-3xl dark:bg-zinc-800">
-          {profile.avatarEmoji}
-        </span>
+        <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} />
         <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{profile.name}</p>
       </div>
+
+      <AvatarImagePicker
+        branchSlug={branchSlug}
+        currentImage={profile.avatarImage}
+        options={AVATAR_IMAGE_OPTIONS}
+      />
 
       <AvatarEmojiPicker
         branchSlug={branchSlug}

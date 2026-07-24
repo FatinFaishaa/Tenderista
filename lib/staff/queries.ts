@@ -210,12 +210,19 @@ export async function setStaffStatus(
   });
 }
 
+
+export const AVATAR_IMAGE_OPTIONS = [
+  "chef-boy", "server-girl", "barista-boy", "cashier-girl",
+  "delivery-boy", "baker-girl", "cook-boy", "waitress-girl",
+  "dishwasher-boy", "coffee-girl", "chef-boy-2", "salad-girl",
+] as const;
+
 const AVATAR_EMOJI_OPTIONS = [
   "😊", "😎", "🧑‍🍳", "👨‍🍳", "👩‍🍳", "🧑‍💼", "💪", "⭐",
   "🔥", "☕", "🍗", "🐔", "😺", "🐱", "🦁", "🐯",
 ] as const;
 
-export type MyProfile = { name: string; avatarEmoji: string };
+export type MyProfile = { name: string; avatarEmoji: string; avatarImage: string | null };
 
 /** The caller's own display name and chosen avatar emoji — used in the Home page
  * greeting header and the Account page's emoji picker. Falls back to the schema
@@ -225,9 +232,13 @@ export async function getMyProfile(branchId: string, userId: string): Promise<My
   return withTenantContext({ userId, branchId }, async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
-      select: { name: true, avatarEmoji: true },
+      select: { name: true, avatarEmoji: true, avatarImage: true },
     });
-    return { name: user?.name ?? "", avatarEmoji: user?.avatarEmoji ?? "😊" };
+    return {
+      name: user?.name ?? "",
+      avatarEmoji: user?.avatarEmoji ?? "😊",
+      avatarImage: user?.avatarImage ?? null,
+    };
   });
 }
 
@@ -242,7 +253,26 @@ export async function updateMyAvatarEmoji(
     throw new InvalidAvatarEmojiError("Not a valid avatar option.");
   }
   await withTenantContext({ userId, branchId }, async (tx) => {
-    await tx.user.update({ where: { id: userId }, data: { avatarEmoji: emoji } });
+    await tx.user.update({ where: { id: userId }, data: { avatarEmoji: emoji, avatarImage: null } });
+  });
+}
+
+export class InvalidAvatarImageError extends Error {}
+
+/** Sets the caller's chosen illustrated avatar (a filename under public/avatars/,
+ * no extension) — mutually exclusive with the emoji avatar, so picking an image
+ * clears avatarEmoji back to the default rather than leaving a stale emoji that
+ * would never be shown once avatarImage is set. */
+export async function updateMyAvatarImage(
+  branchId: string,
+  userId: string,
+  image: string
+): Promise<void> {
+  if (!AVATAR_IMAGE_OPTIONS.includes(image as (typeof AVATAR_IMAGE_OPTIONS)[number])) {
+    throw new InvalidAvatarImageError("Not a valid avatar option.");
+  }
+  await withTenantContext({ userId, branchId }, async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { avatarImage: image } });
   });
 }
 
@@ -253,6 +283,7 @@ export function getAvatarEmojiOptions(): readonly string[] {
 export type MyFullProfile = {
   name: string;
   avatarEmoji: string;
+  avatarImage: string | null;
   dateOfBirth: string | null;
   homeAddress: string | null;
   contactPhone: string | null;
@@ -269,6 +300,7 @@ export async function getMyFullProfile(branchId: string, userId: string): Promis
       select: {
         name: true,
         avatarEmoji: true,
+        avatarImage: true,
         dateOfBirth: true,
         homeAddress: true,
         contactPhone: true,
@@ -278,6 +310,7 @@ export async function getMyFullProfile(branchId: string, userId: string): Promis
     return {
       name: user?.name ?? "",
       avatarEmoji: user?.avatarEmoji ?? "😊",
+      avatarImage: user?.avatarImage ?? null,
       dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.toISOString().slice(0, 10) : null,
       homeAddress: user?.homeAddress ?? null,
       contactPhone: user?.contactPhone ?? null,

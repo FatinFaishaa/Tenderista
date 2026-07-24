@@ -1,5 +1,6 @@
 import { CheckCircle2, MinusCircle, AlertCircle, Clock } from "lucide-react";
 import type { DailyRosterCardRow } from "@/lib/roster/queries";
+import { Avatar } from "@/components/staff/Avatar";
 
 const STATUS_CONFIG: Record<
   DailyRosterCardRow["status"],
@@ -60,9 +61,7 @@ export function DailyRosterCards({
                 key={row.staffId}
                 className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-cream text-2xl dark:bg-zinc-800">
-                  {row.avatarEmoji}
-                </span>
+                <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={44} />
                 <div className="flex-1 truncate">
                   <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                     {row.staffName}

@@ -368,6 +368,7 @@ model User {
   phone        String?    @unique @db.VarChar(30)
   passwordHash String     @map("password_hash")
   avatarEmoji  String?    @default("😊") @map("avatar_emoji") @db.VarChar(10)
+  avatarImage  String?    @map("avatar_image") @db.VarChar(100)
   dateOfBirth  DateTime?  @map("date_of_birth") @db.Date
   homeAddress  String?    @map("home_address")
   contactPhone String?    @map("contact_phone") @db.VarChar(30)
