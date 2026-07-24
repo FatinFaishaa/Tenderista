@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
-import { Calendar, MapPin, Phone, ShieldAlert } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, Calendar, MapPin, Phone, ShieldAlert } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getStaffById, getStaffPersonalInfo } from "@/lib/staff/queries";
@@ -45,6 +46,13 @@ export default async function EditStaffPage({
 
   return (
     <div className="max-w-md space-y-6">
+      <Link
+        href={`/office/${branchSlug}/staff`}
+        className="inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
+      >
+        <ChevronLeft className="h-4 w-4" /> Kembali ke Staff
+      </Link>
+
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Edit Staff</h1>
 
       {personalInfo && (
