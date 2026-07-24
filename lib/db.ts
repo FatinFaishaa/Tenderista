@@ -44,7 +44,8 @@ export async function withTenantContext<T>(
   context: TenantContext,
   fn: (tx: Prisma.TransactionClient) => Promise<T>
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(
+    async (tx) => {
     await tx.$executeRawUnsafe(
       `SELECT set_config('app.current_user_id', $1, true), set_config('app.current_branch_id', $2, true), set_config('app.current_platform_admin_id', $3, true)`,
       context.userId ?? "",
@@ -52,6 +53,8 @@ export async function withTenantContext<T>(
       context.platformAdminId ?? ""
     );
 
-    return fn(tx);
-  });
+      return fn(tx);
+    },
+    { maxWait: 10000, timeout: 15000 }
+  );
 }

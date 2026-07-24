@@ -8,6 +8,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Tenderista brand palette — heritage F&B maroon + cream, from brand direction */
+  --brand-maroon: #8b1a1a;
+  --brand-maroon-dark: #6b1414;
+  --brand-cream: #fdf6ec;
+  --brand-gold: #c9a227;
 }
 
 @theme inline {
@@ -15,6 +21,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-brand-maroon: var(--brand-maroon);
+  --color-brand-maroon-dark: var(--brand-maroon-dark);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-gold: var(--brand-gold);
 }
 
 :root.dark {

@@ -194,3 +194,43 @@ export async function setStaffStatus(
     if (result.count === 0) throw new StaffMutationError("Staff member not found.");
   });
 }
+
+const AVATAR_EMOJI_OPTIONS = [
+  "😊", "😎", "🧑‍🍳", "👨‍🍳", "👩‍🍳", "🧑‍💼", "💪", "⭐",
+  "🔥", "☕", "🍗", "🐔", "😺", "🐱", "🦁", "🐯",
+] as const;
+
+export type MyProfile = { name: string; avatarEmoji: string };
+
+/** The caller's own display name and chosen avatar emoji — used in the Home page
+ * greeting header and the Account page's emoji picker. Falls back to the schema
+ * default if somehow null (existing rows created before this column existed get the
+ * default via Prisma's @default, so this is mostly a type-safety fallback). */
+export async function getMyProfile(branchId: string, userId: string): Promise<MyProfile> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { name: true, avatarEmoji: true },
+    });
+    return { name: user?.name ?? "", avatarEmoji: user?.avatarEmoji ?? "😊" };
+  });
+}
+
+export class InvalidAvatarEmojiError extends Error {}
+
+export async function updateMyAvatarEmoji(
+  branchId: string,
+  userId: string,
+  emoji: string
+): Promise<void> {
+  if (!AVATAR_EMOJI_OPTIONS.includes(emoji as (typeof AVATAR_EMOJI_OPTIONS)[number])) {
+    throw new InvalidAvatarEmojiError("Not a valid avatar option.");
+  }
+  await withTenantContext({ userId, branchId }, async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { avatarEmoji: emoji } });
+  });
+}
+
+export function getAvatarEmojiOptions(): readonly string[] {
+  return AVATAR_EMOJI_OPTIONS;
+}
