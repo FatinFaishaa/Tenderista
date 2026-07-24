@@ -234,3 +234,106 @@ export async function updateMyAvatarEmoji(
 export function getAvatarEmojiOptions(): readonly string[] {
   return AVATAR_EMOJI_OPTIONS;
 }
+
+export type MyFullProfile = {
+  name: string;
+  avatarEmoji: string;
+  dateOfBirth: string | null;
+  homeAddress: string | null;
+};
+
+/** The caller's own editable profile fields — shown and edited on the Account page.
+ * dateOfBirth is returned as a YYYY-MM-DD string (not a Date) since that's what an
+ * <input type="date"> needs and what the update function accepts back. */
+export async function getMyFullProfile(branchId: string, userId: string): Promise<MyFullProfile> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { name: true, avatarEmoji: true, dateOfBirth: true, homeAddress: true },
+    });
+    return {
+      name: user?.name ?? "",
+      avatarEmoji: user?.avatarEmoji ?? "😊",
+      dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.toISOString().slice(0, 10) : null,
+      homeAddress: user?.homeAddress ?? null,
+    };
+  });
+}
+
+export type MyProfileUpdateInput = {
+  name: string;
+  dateOfBirth: string | null;
+  homeAddress: string | null;
+};
+
+export class InvalidProfileInputError extends Error {}
+
+/** Staff self-edit: name, date of birth, home address. Deliberately does NOT touch
+ * jobPosition, salaryType, hourlyRate, or basicSalary — those are Owner/Manager-only
+ * fields on the Staff row, edited via the existing staff management screens, not
+ * this self-service endpoint. */
+export async function updateMyProfile(
+  branchId: string,
+  userId: string,
+  input: MyProfileUpdateInput
+): Promise<void> {
+  const trimmedName = input.name.trim();
+  if (trimmedName.length < 2 || trimmedName.length > 150) {
+    throw new InvalidProfileInputError("Name must be between 2 and 150 characters.");
+  }
+  await withTenantContext({ userId, branchId }, async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        name: trimmedName,
+        dateOfBirth: input.dateOfBirth ? new Date(input.dateOfBirth) : null,
+        homeAddress: input.homeAddress?.trim() || null,
+      },
+    });
+  });
+}
+
+export type MyEmploymentInfo = {
+  salaryType: "monthly" | "hourly" | "daily";
+  hourlyRate: number | null;
+  basicSalary: number | null;
+  employmentStatus: string;
+  /** Total earned to date, computed from actual worked hours × hourly rate for
+   * hourly staff. Null for monthly/daily staff, where `basicSalary` is shown
+   * instead — computing a meaningful "earned so far" figure for those salary
+   * types would need pay-period-aware logic this view doesn't have yet. */
+  totalEarnedToDate: number | null;
+};
+
+/** The caller's own employment terms — view-only on the Account page. Owner/Manager
+ * still edit these via the existing staff management screens; this is read access
+ * only, scoped to the caller's own Staff row. */
+export async function getMyEmploymentInfo(
+  branchId: string,
+  userId: string
+): Promise<MyEmploymentInfo | null> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const staff = await tx.staff.findUnique({
+      where: { branchId_userId: { branchId, userId } },
+    });
+    if (!staff) return null;
+
+    let totalEarnedToDate: number | null = null;
+    if (staff.salaryType === "hourly" && staff.hourlyRate) {
+      const records = await tx.attendanceRecord.findMany({
+        where: { staffId: staff.id },
+        select: { workedHours: true },
+      });
+      const totalHours = records.reduce((sum, r) => sum + Number(r.workedHours), 0);
+      totalEarnedToDate = totalHours * Number(staff.hourlyRate);
+    }
+
+    return {
+      salaryType: staff.salaryType,
+      hourlyRate: staff.hourlyRate ? Number(staff.hourlyRate) : null,
+      basicSalary: staff.basicSalary ? Number(staff.basicSalary) : null,
+      employmentStatus: staff.employmentStatus,
+      totalEarnedToDate,
+    };
+  });
+}

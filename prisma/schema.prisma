@@ -368,6 +368,8 @@ model User {
   phone        String?    @unique @db.VarChar(30)
   passwordHash String     @map("password_hash")
   avatarEmoji  String?    @default("😊") @map("avatar_emoji") @db.VarChar(10)
+  dateOfBirth  DateTime?  @map("date_of_birth") @db.Date
+  homeAddress  String?    @map("home_address")
   status       UserStatus @default(active)
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
