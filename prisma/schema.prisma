@@ -370,6 +370,8 @@ model User {
   avatarEmoji  String?    @default("😊") @map("avatar_emoji") @db.VarChar(10)
   dateOfBirth  DateTime?  @map("date_of_birth") @db.Date
   homeAddress  String?    @map("home_address")
+  contactPhone String?    @map("contact_phone") @db.VarChar(30)
+  emergencyContact String? @map("emergency_contact") @db.VarChar(150)
   status       UserStatus @default(active)
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)

@@ -66,6 +66,8 @@ export default async function AccountPage({
         initialName={profile.name}
         initialDateOfBirth={profile.dateOfBirth}
         initialAddress={profile.homeAddress}
+        initialContactPhone={profile.contactPhone}
+        initialEmergencyContact={profile.emergencyContact}
       />
 
       {employment && (

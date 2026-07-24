@@ -28,6 +28,8 @@ export async function POST(
       name: body.name,
       dateOfBirth: typeof body.dateOfBirth === "string" ? body.dateOfBirth : null,
       homeAddress: typeof body.homeAddress === "string" ? body.homeAddress : null,
+      contactPhone: typeof body.contactPhone === "string" ? body.contactPhone : null,
+      emergencyContact: typeof body.emergencyContact === "string" ? body.emergencyContact : null,
     });
     return NextResponse.json({ success: true });
   } catch (err) {

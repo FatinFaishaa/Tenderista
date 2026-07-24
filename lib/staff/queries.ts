@@ -255,6 +255,8 @@ export type MyFullProfile = {
   avatarEmoji: string;
   dateOfBirth: string | null;
   homeAddress: string | null;
+  contactPhone: string | null;
+  emergencyContact: string | null;
 };
 
 /** The caller's own editable profile fields — shown and edited on the Account page.
@@ -264,13 +266,22 @@ export async function getMyFullProfile(branchId: string, userId: string): Promis
   return withTenantContext({ userId, branchId }, async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
-      select: { name: true, avatarEmoji: true, dateOfBirth: true, homeAddress: true },
+      select: {
+        name: true,
+        avatarEmoji: true,
+        dateOfBirth: true,
+        homeAddress: true,
+        contactPhone: true,
+        emergencyContact: true,
+      },
     });
     return {
       name: user?.name ?? "",
       avatarEmoji: user?.avatarEmoji ?? "😊",
       dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.toISOString().slice(0, 10) : null,
       homeAddress: user?.homeAddress ?? null,
+      contactPhone: user?.contactPhone ?? null,
+      emergencyContact: user?.emergencyContact ?? null,
     };
   });
 }
@@ -279,6 +290,8 @@ export type MyProfileUpdateInput = {
   name: string;
   dateOfBirth: string | null;
   homeAddress: string | null;
+  contactPhone: string | null;
+  emergencyContact: string | null;
 };
 
 export class InvalidProfileInputError extends Error {}
@@ -303,6 +316,8 @@ export async function updateMyProfile(
         name: trimmedName,
         dateOfBirth: input.dateOfBirth ? new Date(input.dateOfBirth) : null,
         homeAddress: input.homeAddress?.trim() || null,
+        contactPhone: input.contactPhone?.trim() || null,
+        emergencyContact: input.emergencyContact?.trim() || null,
       },
     });
   });
