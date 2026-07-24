@@ -367,3 +367,35 @@ export async function getMyEmploymentInfo(
     };
   });
 }
+
+/** Distinct job positions currently in use at this branch — used to populate the
+ * "Assign to job position" dropdown when creating/editing a Daily Task, so Owners
+ * pick from positions that actually exist rather than typing free text that might
+ * not match any real staff member's jobPosition. */
+export async function listDistinctJobPositions(
+  branchId: string,
+  userId: string
+): Promise<string[]> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const rows = await tx.staff.findMany({
+      where: { branchId, status: "active" },
+      select: { jobPosition: true },
+      distinct: ["jobPosition"],
+      orderBy: { jobPosition: "asc" },
+    });
+    return rows.map((r) => r.jobPosition);
+  });
+}
+
+/** The caller's own job position at this branch — used to filter Daily Tasks
+ * assigned to a specific position. Null for Owners (no Staff row) or a staff member
+ * whose Staff row is somehow missing. */
+export async function getMyJobPosition(branchId: string, userId: string): Promise<string | null> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const staff = await tx.staff.findUnique({
+      where: { branchId_userId: { branchId, userId } },
+      select: { jobPosition: true },
+    });
+    return staff?.jobPosition ?? null;
+  });
+}

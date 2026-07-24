@@ -3,6 +3,7 @@ import { Clock, CheckCircle2, ClipboardList } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getTodaysDailyTasks } from "@/lib/dailyTasks/queries";
+import { getMyJobPosition } from "@/lib/staff/queries";
 import { DailyTaskCheckbox } from "@/components/dailyTasks/DailyTaskCheckbox";
 
 export default async function StaffDailyTasksPage({
@@ -15,7 +16,14 @@ export default async function StaffDailyTasksPage({
   if (!session.userId) redirect("/login");
   const branch = await resolveBranchForUser(branchSlug, session.userId);
   if (!branch) redirect("/branches");
-  const tasks = await getTodaysDailyTasks(branch.id, session.userId, branch.timezone);
+  const myStaffRecord = await getMyJobPosition(branch.id, session.userId);
+  const tasks = await getTodaysDailyTasks(
+    branch.id,
+    session.userId,
+    branch.timezone,
+    undefined,
+    branch.role === "owner" ? undefined : myStaffRecord ?? undefined
+  );
   const completedCount = tasks.filter((t) => t.isCompleted).length;
   const percent = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 

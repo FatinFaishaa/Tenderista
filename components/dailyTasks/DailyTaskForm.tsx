@@ -8,13 +8,17 @@ import { FormError } from "@/components/ui/FormError";
 type Props = {
   branchSlug: string;
   taskId?: string;
-  initialValues?: { title: string; isPriority?: boolean };
+  jobPositionOptions: string[];
+  initialValues?: { title: string; isPriority?: boolean; assignedJobPosition?: string | null };
 };
 
-export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
+export function DailyTaskForm({ branchSlug, taskId, jobPositionOptions, initialValues }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [isPriority, setIsPriority] = useState(initialValues?.isPriority ?? false);
+  const [assignedJobPosition, setAssignedJobPosition] = useState(
+    initialValues?.assignedJobPosition ?? ""
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const isEditing = Boolean(taskId);
@@ -29,7 +33,11 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
       const res = await fetch(endpoint, {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, isPriority }),
+        body: JSON.stringify({
+          title,
+          isPriority,
+          assignedJobPosition: assignedJobPosition || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -54,6 +62,25 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
           maxLength={200}
           required
         />
+      </div>
+      <div>
+        <Label htmlFor="assignedJobPosition">Assign to Job Position</Label>
+        <select
+          id="assignedJobPosition"
+          value={assignedJobPosition}
+          onChange={(e) => setAssignedJobPosition(e.target.value)}
+          className="min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        >
+          <option value="">— Semua Staff —</option>
+          {jobPositionOptions.map((position) => (
+            <option key={position} value={position}>
+              {position}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          Pilih "Semua Staff" untuk tugasan yang dilihat oleh semua orang.
+        </p>
       </div>
       <label className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
         <input

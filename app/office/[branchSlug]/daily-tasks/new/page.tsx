@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
+import { resolveBranchForUser } from "@/lib/tenancy/branch";
+import { listDistinctJobPositions } from "@/lib/staff/queries";
 import { DailyTaskForm } from "@/components/dailyTasks/DailyTaskForm";
 
 export default async function NewDailyTaskPage({
@@ -6,13 +10,18 @@ export default async function NewDailyTaskPage({
   params: Promise<{ branchSlug: string }>;
 }) {
   const { branchSlug } = await params;
+  const session = await getSession();
+  if (!session.userId) redirect("/login");
+  const branch = await resolveBranchForUser(branchSlug, session.userId);
+  if (!branch) redirect("/branches");
+  const jobPositionOptions = await listDistinctJobPositions(branch.id, session.userId);
 
   return (
     <div className="max-w-md">
       <h1 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
         Add Task
       </h1>
-      <DailyTaskForm branchSlug={branchSlug} />
+      <DailyTaskForm branchSlug={branchSlug} jobPositionOptions={jobPositionOptions} />
     </div>
   );
 }

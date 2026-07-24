@@ -13,6 +13,7 @@ export type DailyTaskRow = {
   title: string;
   sortOrder: number;
   isPriority: boolean;
+  assignedJobPosition: string | null;
 };
 
 /** For the Owner/Manager management page — every task, in sortOrder. */
@@ -22,7 +23,7 @@ export async function listDailyTasks(branchId: string, userId: string): Promise<
       where: { branchId },
       orderBy: { sortOrder: "asc" },
     });
-    return tasks.map((t) => ({ id: t.id, title: t.title, sortOrder: t.sortOrder, isPriority: t.isPriority }));
+    return tasks.map((t) => ({ id: t.id, title: t.title, sortOrder: t.sortOrder, isPriority: t.isPriority, assignedJobPosition: t.assignedJobPosition }));
   });
 }
 
@@ -34,7 +35,7 @@ export async function getDailyTaskById(
   return withTenantContext({ userId, branchId }, async (tx) => {
     const task = await tx.dailyTask.findFirst({ where: { id, branchId } });
     if (!task) return null;
-    return { id: task.id, title: task.title, sortOrder: task.sortOrder, isPriority: task.isPriority };
+    return { id: task.id, title: task.title, sortOrder: task.sortOrder, isPriority: task.isPriority, assignedJobPosition: task.assignedJobPosition };
   });
 }
 
@@ -55,7 +56,8 @@ export async function getTodaysDailyTasks(
   branchId: string,
   userId: string,
   timezone: string,
-  date?: Date
+  date?: Date,
+  restrictToJobPosition?: string
 ): Promise<TodaysDailyTask[]> {
   const targetDate = date ?? getBranchLocalDate(timezone);
 
@@ -71,13 +73,20 @@ export async function getTodaysDailyTasks(
       },
     });
 
-    return tasks.map((task) => {
+    const filtered = restrictToJobPosition
+      ? tasks.filter(
+          (t) => !t.assignedJobPosition || t.assignedJobPosition === restrictToJobPosition
+        )
+      : tasks;
+
+    return filtered.map((task) => {
       const completion = task.completions[0] ?? null;
       return {
         id: task.id,
         title: task.title,
         sortOrder: task.sortOrder,
         isPriority: task.isPriority,
+        assignedJobPosition: task.assignedJobPosition,
         isCompleted: Boolean(completion),
         completedByName: completion?.completer.name ?? null,
         completedAt: completion?.completedAt ?? null,
@@ -120,7 +129,7 @@ export async function toggleTodaysCompletion(
 export async function createDailyTask(
   branchId: string,
   userId: string,
-  input: { title: string; isPriority?: boolean }
+  input: { title: string; isPriority?: boolean; assignedJobPosition?: string | null }
 ): Promise<{ id: string }> {
   return withTenantContext({ userId, branchId }, async (tx) => {
     const last = await tx.dailyTask.findFirst({
@@ -133,6 +142,7 @@ export async function createDailyTask(
         branchId,
         title: input.title,
         isPriority: input.isPriority ?? false,
+        assignedJobPosition: input.assignedJobPosition || null,
         sortOrder: (last?.sortOrder ?? -1) + 1,
         createdBy: userId,
       },
@@ -146,12 +156,16 @@ export async function updateDailyTask(
   branchId: string,
   userId: string,
   id: string,
-  input: { title: string; isPriority?: boolean }
+  input: { title: string; isPriority?: boolean; assignedJobPosition?: string | null }
 ): Promise<void> {
   const result = await withTenantContext({ userId, branchId }, (tx) =>
     tx.dailyTask.updateMany({
       where: { id, branchId },
-      data: { title: input.title, isPriority: input.isPriority ?? false },
+      data: {
+        title: input.title,
+        isPriority: input.isPriority ?? false,
+        assignedJobPosition: input.assignedJobPosition || null,
+      },
     })
   );
   if (result.count === 0) throw new DailyTaskNotFoundError("Task not found.");
