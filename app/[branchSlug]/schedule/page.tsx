@@ -30,17 +30,14 @@ export default async function StaffSchedulePage({
   const { view: viewParam } = await searchParams;
   const session = await getSession();
   if (!session.userId) redirect("/login");
-
   const branch = await resolveBranchForUser(branchSlug, session.userId);
   if (!branch) redirect("/branches");
-
   const view: "my" | "today" = viewParam === "today" ? "today" : "my";
-
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {view === "my" ? "My Schedule" : "Today's Roster"}
+          📅 {view === "my" ? "Jadual Saya" : "Roster Hari Ini"}
         </h1>
         <div className="flex gap-2">
           <Link href="?view=my">
@@ -48,7 +45,7 @@ export default async function StaffSchedulePage({
               variant={view === "my" ? "primary" : "secondary"}
               className="px-3 py-1.5 text-sm"
             >
-              My Schedule
+              Jadual Saya
             </Button>
           </Link>
           <Link href="?view=today">
@@ -56,12 +53,11 @@ export default async function StaffSchedulePage({
               variant={view === "today" ? "primary" : "secondary"}
               className="px-3 py-1.5 text-sm"
             >
-              Today&apos;s Roster
+              Hari Ini
             </Button>
           </Link>
         </div>
       </div>
-
       {view === "my" ? (
         <MySchedule branchId={branch.id} userId={session.userId} timezone={branch.timezone} />
       ) : (
@@ -82,31 +78,45 @@ async function MySchedule({
 }) {
   const weekStart = getWeekStart(getBranchLocalDate(timezone));
   const days = await getMyPublishedScheduleForWeek(branchId, userId, weekStart);
+  const todayStr = getBranchLocalDateString(timezone);
 
   return (
     <div className="space-y-2">
-      {days.map((day, i) => (
-        <Card key={day.date} className="flex items-center justify-between">
-          <span className="font-medium text-zinc-900 dark:text-zinc-50">
-            {DAY_LABELS[i]}{" "}
-            <span className="font-normal text-zinc-400 dark:text-zinc-500">
-              {day.date.slice(5)}
+      {days.map((day, i) => {
+        const isToday = day.date === todayStr;
+        return (
+          <Card
+            key={day.date}
+            className={`flex items-center justify-between ${
+              isToday ? "border-brand-maroon bg-brand-cream dark:bg-zinc-800" : ""
+            }`}
+          >
+            <span className="font-medium text-zinc-900 dark:text-zinc-50">
+              {DAY_LABELS[i]}{" "}
+              <span className="font-normal text-zinc-400 dark:text-zinc-500">
+                {day.date.slice(5)}
+              </span>
+              {isToday && (
+                <span className="ml-2 rounded-full bg-brand-maroon px-2 py-0.5 text-xs text-white">
+                  Hari Ini
+                </span>
+              )}
             </span>
-          </span>
-          {day.status === "off" && (
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">Off</span>
-          )}
-          {day.status === "working" && (
-            <span className="text-sm text-zinc-900 dark:text-zinc-50">
-              {day.startTime}–{day.endTime}
-              {day.shiftName ? ` (${day.shiftName})` : ""}
-            </span>
-          )}
-          {day.status === "unpublished" && (
-            <span className="text-sm text-zinc-400 dark:text-zinc-600">Not yet scheduled</span>
-          )}
-        </Card>
-      ))}
+            {day.status === "off" && (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">🌴 Off</span>
+            )}
+            {day.status === "working" && (
+              <span className="text-sm font-semibold text-brand-maroon dark:text-red-400">
+                🕐 {day.startTime}–{day.endTime}
+                {day.shiftName ? ` (${day.shiftName})` : ""}
+              </span>
+            )}
+            {day.status === "unpublished" && (
+              <span className="text-sm text-zinc-400 dark:text-zinc-600">Belum dijadualkan</span>
+            )}
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -122,6 +132,5 @@ async function TodaysRoster({
 }) {
   const todayStr = getBranchLocalDateString(timezone);
   const rows = await getDailyRoster(branchId, userId, parseDateKey(todayStr));
-
   return <DailyRosterView rows={rows} date={todayStr} timezone={timezone} />;
 }
