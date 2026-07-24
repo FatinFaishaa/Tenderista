@@ -51,6 +51,12 @@ export default async function OwnerAccountPage({
         options={emojiOptions}
       />
 
+      <div className="flex items-center gap-2">
+        <span className="text-sm">🏪</span>
+        <p className="text-sm font-semibold text-brand-maroon dark:text-red-400">Pengurusan Kedai</p>
+        <span className="h-px flex-1 border-t border-dashed border-zinc-300 dark:border-zinc-700" />
+      </div>
+
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         {MENU_ITEMS.map((item, i) => (
           <Link
