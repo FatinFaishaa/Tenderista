@@ -35,9 +35,9 @@ export default async function StaffSopDetailPage({
     <div>
       <Link
         href={`/${branchSlug}/sops`}
-        className="mb-4 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        ← Back to SOPs
+        ← Kembali ke SOP
       </Link>
       <Card>
         <Badge>{sop.categoryName}</Badge>
