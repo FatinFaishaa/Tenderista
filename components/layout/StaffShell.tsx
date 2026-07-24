@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Home, Calendar, ListTodo, BookOpen, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const NAV_ITEMS = [
-  { label: "Utama", icon: "🏠", href: "" },
-  { label: "Jadual", icon: "📅", href: "schedule" },
-  { label: "Tugasan", icon: "📝", href: "daily-tasks" },
-  { label: "SOP", icon: "📖", href: "sops" },
-  { label: "Akaun", icon: "👤", href: "account" },
+  { label: "Utama", icon: Home, href: "" },
+  { label: "Jadual", icon: Calendar, href: "schedule" },
+  { label: "Tugasan", icon: ListTodo, href: "daily-tasks" },
+  { label: "SOP", icon: BookOpen, href: "sops" },
+  { label: "Akaun", icon: User, href: "account" },
 ] as const;
 
 export function StaffShell({
@@ -38,29 +39,40 @@ export function StaffShell({
         <button
           onClick={onLogout}
           aria-label="Log out"
-          className="absolute right-4 flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-white/10"
+          className="absolute right-4 flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10"
         >
-          🚪
+          <LogOut className="h-4 w-4" />
         </button>
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-4 py-4">{children}</main>
-      <nav className="sticky bottom-0 grid grid-cols-5 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <nav className="sticky bottom-0 grid grid-cols-5 border-t border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-900">
         {NAV_ITEMS.map((item) => {
           const href = `/${branchSlug}${item.href ? `/${item.href}` : ""}`;
           const active = item.href
             ? pathname === href || pathname.startsWith(`${href}/`)
             : pathname === href;
+          const Icon = item.icon;
           return (
             <Link
               key={item.label}
               href={href}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium",
-                active ? "text-brand-maroon dark:text-red-400" : "text-zinc-500 dark:text-zinc-400"
-              )}
+              className="flex flex-col items-center gap-1 py-1 text-xs font-medium"
             >
-              <span className="text-lg leading-none">{item.icon}</span>
-              {item.label}
+              <span
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                  active ? "bg-brand-maroon text-white" : "text-zinc-400 dark:text-zinc-500"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+              </span>
+              <span
+                className={cn(
+                  active ? "text-brand-maroon dark:text-red-400" : "text-zinc-500 dark:text-zinc-400"
+                )}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}
