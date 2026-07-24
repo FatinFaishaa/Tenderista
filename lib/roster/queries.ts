@@ -319,3 +319,53 @@ export async function getMyPublishedScheduleForWeek(
     });
   });
 }
+
+export type DailyRosterCardRow = DailyRosterRow & {
+  avatarEmoji: string;
+  jobPosition: string;
+  department: string | null;
+};
+
+/** Same shape as getDailyRoster, but joined with the staff's job position and chosen
+ * avatar emoji — used by the staff-facing "Today's Roster" card view (as opposed to
+ * the Gantt-style DailyRosterView used elsewhere), which needs those extra display
+ * fields per row. */
+export async function getDailyRosterWithProfile(
+  branchId: string,
+  userId: string,
+  date: Date
+): Promise<DailyRosterCardRow[]> {
+  const baseRows = await getDailyRoster(branchId, userId, date);
+
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const staffList = await tx.staff.findMany({
+      where: { branchId, status: "active" },
+      include: { user: { select: { avatarEmoji: true } } },
+    });
+    const byStaffId = new Map(staffList.map((s) => [s.id, s]));
+
+    return baseRows.map((row) => {
+      const staff = byStaffId.get(row.staffId);
+      return {
+        ...row,
+        avatarEmoji: staff?.user.avatarEmoji ?? "😊",
+        jobPosition: staff?.jobPosition ?? "",
+        department: staff?.department ?? null,
+      };
+    });
+  });
+}
+
+/** Count of staff with an attendance status of "late" today — shown in the roster
+ * summary alongside working/off/unscheduled counts. */
+export async function getLateCountToday(
+  branchId: string,
+  userId: string,
+  date: Date
+): Promise<number> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    return tx.attendanceRecord.count({
+      where: { branchId, date, status: "late" },
+    });
+  });
+}
