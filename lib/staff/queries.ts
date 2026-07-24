@@ -432,3 +432,45 @@ export async function getMyJobPosition(branchId: string, userId: string): Promis
     return staff?.jobPosition ?? null;
   });
 }
+
+export type StaffPersonalInfo = {
+  dateOfBirth: string | null;
+  homeAddress: string | null;
+  contactPhone: string | null;
+  emergencyContact: string | null;
+};
+
+/** Owner/Manager-facing, read-only — the personal details a staff member has saved
+ * about themselves (via the staff-side Account page), shown on the Edit Staff page
+ * so the Owner has emergency contact info on hand. Deliberately no update function
+ * alongside this: these fields stay staff-self-edit-only, this is view access only. */
+export async function getStaffPersonalInfo(
+  branchId: string,
+  userId: string,
+  staffId: string
+): Promise<StaffPersonalInfo | null> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const staff = await tx.staff.findFirst({
+      where: { id: staffId, branchId },
+      include: {
+        user: {
+          select: {
+            dateOfBirth: true,
+            homeAddress: true,
+            contactPhone: true,
+            emergencyContact: true,
+          },
+        },
+      },
+    });
+    if (!staff) return null;
+    return {
+      dateOfBirth: staff.user.dateOfBirth
+        ? staff.user.dateOfBirth.toISOString().slice(0, 10)
+        : null,
+      homeAddress: staff.user.homeAddress,
+      contactPhone: staff.user.contactPhone,
+      emergencyContact: staff.user.emergencyContact,
+    };
+  });
+}
