@@ -28,7 +28,7 @@ export function StaffShell({
   return (
     <div className="flex min-h-screen flex-col bg-brand-cream dark:bg-zinc-950">
       <header className="flex items-center justify-between bg-brand-maroon px-4 py-3 text-white">
-        <span className="font-semibold">{branchName}</span>
+        <span className="font-display text-xl">{branchName}</span>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <LogoutButton />
