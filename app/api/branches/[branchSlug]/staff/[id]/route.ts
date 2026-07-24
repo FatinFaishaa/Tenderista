@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
-import { updateStaffMember, StaffMutationError } from "@/lib/staff/queries";
+import { updateStaffMember, deleteStaffMember, StaffMutationError } from "@/lib/staff/queries";
 import { staffEditSchema } from "@/lib/validation/staff";
 
 export async function PATCH(
@@ -37,6 +37,33 @@ export async function PATCH(
   } catch (err) {
     if (err instanceof StaffMutationError) {
       return NextResponse.json({ error: err.message }, { status: 409 });
+    }
+    throw err;
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ branchSlug: string; id: string }> }
+) {
+  const session = await getSession();
+  if (!session.userId) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+  const { branchSlug, id } = await params;
+  const branch = await resolveBranchForUser(branchSlug, session.userId);
+  if (!branch) {
+    return NextResponse.json({ error: "Branch not found." }, { status: 404 });
+  }
+  if (branch.role !== "owner") {
+    return NextResponse.json({ error: "Only the Owner can delete staff." }, { status: 403 });
+  }
+  try {
+    await deleteStaffMember(branch.id, session.userId, id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (err instanceof StaffMutationError) {
+      return NextResponse.json({ error: err.message }, { status: 404 });
     }
     throw err;
   }

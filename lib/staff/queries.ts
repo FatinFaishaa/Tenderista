@@ -474,3 +474,19 @@ export async function getStaffPersonalInfo(
     };
   });
 }
+
+/** Owner-only, permanent: hard-deletes the Staff row. All related records
+ * (attendance, schedules, break records, payroll) cascade-delete along with it —
+ * this is deliberately irreversible, unlike toggling status to "inactive" (which
+ * revokes access but keeps history). The User account itself is left untouched,
+ * since the same person may have Staff rows at other branches. */
+export async function deleteStaffMember(
+  branchId: string,
+  userId: string,
+  staffId: string
+): Promise<void> {
+  const result = await withTenantContext({ userId, branchId }, (tx) =>
+    tx.staff.deleteMany({ where: { id: staffId, branchId } })
+  );
+  if (result.count === 0) throw new StaffMutationError("Staff member not found.");
+}
