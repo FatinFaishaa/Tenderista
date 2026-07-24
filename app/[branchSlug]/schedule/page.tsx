@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ClockButton } from "@/components/attendance/ClockButton";
 import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
-import { dateToTimeString } from "@/lib/utils/timeOfDay";
+import { formatBranchTime } from "@/lib/utils/branchDate";
 
 const DAY_LABELS = [
   "Monday",
@@ -192,9 +192,9 @@ async function TodaysRoster({
           <div className="mt-3">
             <ClockButton
               branchSlug={branchSlug}
-              clockInTime={myAttendance.clockInAt ? dateToTimeString(myAttendance.clockInAt) : null}
+              clockInTime={myAttendance.clockInAt ? formatBranchTime(myAttendance.clockInAt, timezone) : null}
               clockOutTime={
-                myAttendance.clockOutAt ? dateToTimeString(myAttendance.clockOutAt) : null
+                myAttendance.clockOutAt ? formatBranchTime(myAttendance.clockOutAt, timezone) : null
               }
               status={myAttendance.status}
             />

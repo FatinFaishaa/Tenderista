@@ -11,7 +11,7 @@ import { getClosingProgressByDepartment } from "@/lib/closingChecklists/queries"
 import { getTodaysScheduleSummary } from "@/lib/roster/queries";
 import { listAnnouncements } from "@/lib/announcements/queries";
 import { ClockButton } from "@/components/attendance/ClockButton";
-import { dateToTimeString } from "@/lib/utils/timeOfDay";
+import { formatBranchTime } from "@/lib/utils/branchDate";
 
 function sumProgress(groups: { total: number; completed: number }[]) {
   return groups.reduce(
@@ -94,8 +94,8 @@ export default async function StaffHomePage({
           <div className="mt-3 [&_button]:flex [&_button]:items-center [&_button]:justify-center [&_button]:gap-2">
             <ClockButton
               branchSlug={branchSlug}
-              clockInTime={attendance.clockInAt ? dateToTimeString(attendance.clockInAt) : null}
-              clockOutTime={attendance.clockOutAt ? dateToTimeString(attendance.clockOutAt) : null}
+              clockInTime={attendance.clockInAt ? formatBranchTime(attendance.clockInAt, branch.timezone) : null}
+              clockOutTime={attendance.clockOutAt ? formatBranchTime(attendance.clockOutAt, branch.timezone) : null}
               status={attendance.status}
             />
           </div>
