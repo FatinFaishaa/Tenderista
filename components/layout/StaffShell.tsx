@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LogoutButton } from "@/components/layout/LogoutButton";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 
 const NAV_ITEMS = [
@@ -24,15 +22,26 @@ export function StaffShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function onLogout() {
+    const res = await fetch("/api/auth/logout", { method: "POST" });
+    const data = await res.json();
+    router.push(data.redirectTo);
+    router.refresh();
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-brand-cream dark:bg-zinc-950">
-      <header className="flex items-center justify-between bg-brand-maroon px-4 py-3 text-white">
+      <header className="relative flex items-center justify-center bg-brand-maroon px-4 py-3 text-white">
         <span className="font-display text-xl">{branchName}</span>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <LogoutButton />
-        </div>
+        <button
+          onClick={onLogout}
+          aria-label="Log out"
+          className="absolute right-4 flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-white/10"
+        >
+          🚪
+        </button>
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-4 py-4">{children}</main>
       <nav className="sticky bottom-0 grid grid-cols-5 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
