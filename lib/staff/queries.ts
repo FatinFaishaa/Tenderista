@@ -12,6 +12,12 @@ export type StaffListItem = {
   status: "active" | "inactive";
 };
 
+export type StaffEmploymentDetail = StaffListItem & {
+  salaryType: "monthly" | "hourly";
+  hourlyRate: number | null;
+  basicSalary: number | null;
+};
+
 /**
  * The caller's own department at this branch — null if they have no Staff row here
  * (e.g. the Owner, who isn't a Staff row at all) or if a department was never set on
@@ -53,7 +59,7 @@ export async function listStaffForBranch(
   });
 }
 
-export type StaffDetail = StaffListItem;
+export type StaffDetail = StaffEmploymentDetail;
 
 export async function getStaffById(
   branchId: string,
@@ -73,6 +79,9 @@ export async function getStaffById(
       jobPosition: row.jobPosition,
       department: row.department,
       status: row.status,
+      salaryType: row.salaryType,
+      hourlyRate: row.hourlyRate ? Number(row.hourlyRate) : null,
+      basicSalary: row.basicSalary ? Number(row.basicSalary) : null,
     };
   });
 }
@@ -175,7 +184,13 @@ export async function updateStaffMember(
 
     await tx.staff.update({
       where: { id: staffId },
-      data: { jobPosition: input.jobPosition, department: input.department },
+      data: {
+        jobPosition: input.jobPosition,
+        department: input.department,
+        salaryType: input.salaryType,
+        hourlyRate: input.salaryType === "hourly" ? input.hourlyRate : null,
+        basicSalary: input.salaryType === "monthly" ? input.basicSalary : null,
+      },
     });
   });
 }

@@ -22,12 +22,24 @@ export const staffCreateSchema = z.object({
     .optional(),
 });
 
-export const staffEditSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(150, "Name is too long"),
-  email: z.string().trim().email("Enter a valid email"),
-  jobPosition: z.string().trim().min(1, "Role is required").max(100, "Role is too long"),
-  department: departmentField,
-});
+export const staffEditSchema = z
+  .object({
+    name: z.string().trim().min(1, "Name is required").max(150, "Name is too long"),
+    email: z.string().trim().email("Enter a valid email"),
+    jobPosition: z.string().trim().min(1, "Role is required").max(100, "Role is too long"),
+    department: departmentField,
+    salaryType: z.enum(["monthly", "hourly"]),
+    hourlyRate: z.number().positive("Hourly rate must be greater than 0").nullable(),
+    basicSalary: z.number().positive("Monthly salary must be greater than 0").nullable(),
+  })
+  .refine((data) => data.salaryType !== "hourly" || data.hourlyRate !== null, {
+    message: "Hourly rate is required for part-time staff",
+    path: ["hourlyRate"],
+  })
+  .refine((data) => data.salaryType !== "monthly" || data.basicSalary !== null, {
+    message: "Monthly salary is required for full-time staff",
+    path: ["basicSalary"],
+  });
 
 export type StaffCreateInput = z.infer<typeof staffCreateSchema>;
 export type StaffEditInput = z.infer<typeof staffEditSchema>;

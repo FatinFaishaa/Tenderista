@@ -16,6 +16,9 @@ type Props = {
     email: string;
     jobPosition: string;
     department: string | null;
+    salaryType?: "monthly" | "hourly";
+    hourlyRate?: number | null;
+    basicSalary?: number | null;
   };
 };
 
@@ -26,6 +29,15 @@ export function StaffForm({ branchSlug, staffId, initialValues }: Props) {
   const [jobPosition, setJobPosition] = useState(initialValues?.jobPosition ?? "");
   const [department, setDepartment] = useState(initialValues?.department ?? "");
   const [password, setPassword] = useState("");
+  const [salaryType, setSalaryType] = useState<"monthly" | "hourly">(
+    initialValues?.salaryType ?? "monthly"
+  );
+  const [hourlyRate, setHourlyRate] = useState(
+    initialValues?.hourlyRate != null ? String(initialValues.hourlyRate) : ""
+  );
+  const [basicSalary, setBasicSalary] = useState(
+    initialValues?.basicSalary != null ? String(initialValues.basicSalary) : ""
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +54,16 @@ export function StaffForm({ branchSlug, staffId, initialValues }: Props) {
       const res = await fetch(endpoint, {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, jobPosition, department, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          jobPosition,
+          department,
+          password,
+          salaryType,
+          hourlyRate: salaryType === "hourly" && hourlyRate ? Number(hourlyRate) : null,
+          basicSalary: salaryType === "monthly" && basicSalary ? Number(basicSalary) : null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -112,6 +133,50 @@ export function StaffForm({ branchSlug, staffId, initialValues }: Props) {
           ))}
         </select>
       </div>
+
+      <div>
+        <Label htmlFor="salaryType">Employment Type</Label>
+        <select
+          id="salaryType"
+          value={salaryType}
+          onChange={(e) => setSalaryType(e.target.value as "monthly" | "hourly")}
+          className="min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        >
+          <option value="monthly">Full-time (Monthly)</option>
+          <option value="hourly">Part-time (Hourly)</option>
+        </select>
+      </div>
+
+      {salaryType === "hourly" ? (
+        <div>
+          <Label htmlFor="hourlyRate">Hourly Rate (RM)</Label>
+          <Input
+            id="hourlyRate"
+            type="number"
+            step="0.01"
+            min="0"
+            value={hourlyRate}
+            onChange={(e) => setHourlyRate(e.target.value)}
+            placeholder="e.g. 6.00"
+            required
+          />
+        </div>
+      ) : (
+        <div>
+          <Label htmlFor="basicSalary">Monthly Salary (RM)</Label>
+          <Input
+            id="basicSalary"
+            type="number"
+            step="0.01"
+            min="0"
+            value={basicSalary}
+            onChange={(e) => setBasicSalary(e.target.value)}
+            placeholder="e.g. 2000.00"
+            required
+          />
+        </div>
+      )}
+
       {!isEditing && (
         <div>
           <Label htmlFor="password">Initial password</Label>

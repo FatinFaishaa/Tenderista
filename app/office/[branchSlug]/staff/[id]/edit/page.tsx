@@ -32,6 +32,9 @@ export default async function EditStaffPage({
           email: staff.email ?? "",
           jobPosition: staff.jobPosition,
           department: staff.department,
+          salaryType: staff.salaryType,
+          hourlyRate: staff.hourlyRate,
+          basicSalary: staff.basicSalary,
         }}
       />
     </div>
