@@ -24,7 +24,11 @@ export function proxy(request: NextRequest) {
     // redirect. Public static files only, no application data.
     pathname === "/manifest.webmanifest" ||
     pathname === "/apple-touch-icon.png" ||
-    pathname.startsWith("/icons/");
+    pathname.startsWith("/icons/") ||
+    // Brand assets (logo, mascot) — used on the public login page itself, so must
+    // be reachable before any session cookie exists.
+    pathname.startsWith("/brand/") ||
+    pathname.startsWith("/avatars/");
 
   if (isPublic) {
     return NextResponse.next();
