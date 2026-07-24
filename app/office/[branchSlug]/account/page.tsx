@@ -2,16 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
-import {
-  getMyFullProfile,
-  getAvatarEmojiOptions,
-  AVATAR_IMAGE_OPTIONS,
-} from "@/lib/staff/queries";
+import { getMyFullProfile, getAvatarEmojiOptions } from "@/lib/staff/queries";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { AvatarEmojiPicker } from "@/components/staff/AvatarEmojiPicker";
-import { AvatarImagePicker } from "@/components/staff/AvatarImagePicker";
 import { Avatar } from "@/components/staff/Avatar";
-import { MyProfileForm } from "@/components/staff/MyProfileForm";
 
 const MENU_ITEMS = [
   { label: "Staff", icon: "👥", href: "staff" },
@@ -51,25 +45,10 @@ export default async function OwnerAccountPage({
         </div>
       </div>
 
-      <AvatarImagePicker
-        branchSlug={branchSlug}
-        currentImage={profile.avatarImage}
-        options={AVATAR_IMAGE_OPTIONS}
-      />
-
       <AvatarEmojiPicker
         branchSlug={branchSlug}
         currentEmoji={profile.avatarEmoji}
         options={emojiOptions}
-      />
-
-      <MyProfileForm
-        branchSlug={branchSlug}
-        initialName={profile.name}
-        initialDateOfBirth={profile.dateOfBirth}
-        initialAddress={profile.homeAddress}
-        initialContactPhone={profile.contactPhone}
-        initialEmergencyContact={profile.emergencyContact}
       />
 
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
