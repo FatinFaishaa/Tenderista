@@ -177,3 +177,37 @@ export async function getLowStockCount(branchId: string, userId: string): Promis
     return items.filter((i) => Number(i.currentQuantity) <= Number(i.minAlertLevel)).length;
   });
 }
+
+export type LowStockItem = {
+  id: string;
+  name: string;
+  currentQuantity: number;
+  unit: string | null;
+};
+
+/** For the Owner dashboard's "Low Stock Alerts" list — items at or below their
+ * alert threshold, lowest-relative-to-threshold first so the most urgent items
+ * surface at the top. Capped to `limit` since the dashboard only shows a preview
+ * (full list lives on the Inventory page itself). */
+export async function getLowStockItems(
+  branchId: string,
+  userId: string,
+  limit = 4
+): Promise<LowStockItem[]> {
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const items = await tx.stockItem.findMany({
+      where: { branchId, isActive: true },
+      select: { id: true, name: true, currentQuantity: true, minAlertLevel: true, unit: true },
+    });
+    return items
+      .filter((i) => Number(i.currentQuantity) <= Number(i.minAlertLevel))
+      .sort((a, b) => Number(a.currentQuantity) - Number(b.currentQuantity))
+      .slice(0, limit)
+      .map((i) => ({
+        id: i.id,
+        name: i.name,
+        currentQuantity: Number(i.currentQuantity),
+        unit: i.unit,
+      }));
+  });
+}

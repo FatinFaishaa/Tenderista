@@ -237,3 +237,45 @@ export async function deleteDailyExpense(branchId: string, userId: string, id: s
   );
   if (result.count === 0) throw new DailyExpenseNotFoundError("Expense not found.");
 }
+
+export type WeeklySalesDay = {
+  date: string;
+  dayLabel: string;
+  sales: number;
+};
+
+/** Last 7 days (inclusive of `endDateStr`), for the Owner dashboard's weekly sales
+ * bar chart — days with no DailyFinancialRecord show as 0, not omitted, so the
+ * chart always has exactly 7 bars. */
+export async function getWeeklySalesTrend(
+  branchId: string,
+  userId: string,
+  endDateStr: string
+): Promise<WeeklySalesDay[]> {
+  const endDate = new Date(`${endDateStr}T00:00:00.000Z`);
+  const startDate = new Date(endDate);
+  startDate.setUTCDate(startDate.getUTCDate() - 6);
+
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const records = await tx.dailyFinancialRecord.findMany({
+      where: { branchId, date: { gte: startDate, lte: endDate } },
+      select: { date: true, totalSales: true },
+    });
+    const byDate = new Map(
+      records.map((r) => [r.date.toISOString().slice(0, 10), Number(r.totalSales)])
+    );
+
+    const days: WeeklySalesDay[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startDate);
+      d.setUTCDate(d.getUTCDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      days.push({
+        date: key,
+        dayLabel: new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "UTC" }).format(d),
+        sales: byDate.get(key) ?? 0,
+      });
+    }
+    return days;
+  });
+}
