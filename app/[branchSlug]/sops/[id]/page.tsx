@@ -34,10 +34,10 @@ export default async function StaffSopDetailPage({
   return (
     <div>
       <Link
-        href={`/${branchSlug}/sops`}
+        href={`/${branchSlug}/sops/category/${sop.categoryId}`}
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        ← Kembali ke SOP
+        ← Kembali ke {sop.categoryName}
       </Link>
       <Card>
         <Badge>{sop.categoryName}</Badge>

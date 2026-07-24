@@ -875,10 +875,11 @@ model DailyTaskCompletion {
 }
 
 model SopCategory {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  branchId  String   @map("branch_id") @db.Uuid
-  name      String   @db.VarChar(150)
-  sortOrder Int      @default(0) @map("sort_order")
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId    String   @map("branch_id") @db.Uuid
+  name        String   @db.VarChar(150)
+  description String?  @db.VarChar(300)
+  sortOrder   Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
