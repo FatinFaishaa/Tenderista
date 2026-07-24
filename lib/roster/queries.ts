@@ -260,6 +260,7 @@ export type MyScheduleDay = {
   shiftName: string | null;
   startTime: string | null;
   endTime: string | null;
+  jobPosition: string | null;
 };
 
 /** Staff-facing — published rows only. A day with no published row (never assigned,
@@ -285,6 +286,7 @@ export async function getMyPublishedScheduleForWeek(
         shiftName: null,
         startTime: null,
         endTime: null,
+        jobPosition: null,
       }));
     }
 
@@ -304,10 +306,10 @@ export async function getMyPublishedScheduleForWeek(
       const key = formatDateKey(d);
       const row = byDate.get(key);
       if (!row) {
-        return { date: key, status: "unpublished" as const, shiftName: null, startTime: null, endTime: null };
+        return { date: key, status: "unpublished" as const, shiftName: null, startTime: null, endTime: null, jobPosition: null };
       }
       if (row.isOffDay) {
-        return { date: key, status: "off" as const, shiftName: null, startTime: null, endTime: null };
+        return { date: key, status: "off" as const, shiftName: null, startTime: null, endTime: null, jobPosition: null };
       }
       return {
         date: key,
@@ -315,6 +317,7 @@ export async function getMyPublishedScheduleForWeek(
         shiftName: row.shift?.name ?? null,
         startTime: row.startTime ? dateToTimeString(row.startTime) : null,
         endTime: row.endTime ? dateToTimeString(row.endTime) : null,
+        jobPosition: staff.jobPosition,
       };
     });
   });

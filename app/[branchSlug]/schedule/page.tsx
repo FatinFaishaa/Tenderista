@@ -3,29 +3,15 @@ import { redirect } from "next/navigation";
 import { Clock } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
-import {
-  getMyPublishedScheduleForWeek,
-  getDailyRosterWithProfile,
-  getLateCountToday,
-} from "@/lib/roster/queries";
+import { getDailyRosterWithProfile, getLateCountToday } from "@/lib/roster/queries";
 import { getMyTodaysAttendance } from "@/lib/attendance/queries";
-import { getBranchLocalDate, getBranchLocalDateString } from "@/lib/utils/branchDate";
-import { getWeekStart, parseDateKey } from "@/lib/utils/week";
-import { Card } from "@/components/ui/Card";
+import { getBranchLocalDateString } from "@/lib/utils/branchDate";
+import { parseDateKey } from "@/lib/utils/week";
 import { Button } from "@/components/ui/Button";
 import { ClockButton } from "@/components/attendance/ClockButton";
 import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
+import { MySchedule } from "@/components/roster/MySchedule";
 import { formatBranchTime } from "@/lib/utils/branchDate";
-
-const DAY_LABELS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
 
 function formatDateHeading(dateStr: string) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -42,15 +28,17 @@ export default async function StaffSchedulePage({
   searchParams,
 }: {
   params: Promise<{ branchSlug: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; week?: string }>;
 }) {
   const { branchSlug } = await params;
-  const { view: viewParam } = await searchParams;
+  const { view: viewParam, week: weekParam } = await searchParams;
   const session = await getSession();
   if (!session.userId) redirect("/login");
   const branch = await resolveBranchForUser(branchSlug, session.userId);
   if (!branch) redirect("/branches");
   const view: "my" | "today" = viewParam === "today" ? "today" : "my";
+  const weekOffset = weekParam ? parseInt(weekParam, 10) || 0 : 0;
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -77,7 +65,13 @@ export default async function StaffSchedulePage({
         </div>
       </div>
       {view === "my" ? (
-        <MySchedule branchId={branch.id} userId={session.userId} timezone={branch.timezone} />
+        <MySchedule
+          branchId={branch.id}
+          userId={session.userId}
+          timezone={branch.timezone}
+          branchSlug={branchSlug}
+          weekOffset={weekOffset}
+        />
       ) : (
         <TodaysRoster
           branchId={branch.id}
@@ -86,60 +80,6 @@ export default async function StaffSchedulePage({
           timezone={branch.timezone}
         />
       )}
-    </div>
-  );
-}
-
-async function MySchedule({
-  branchId,
-  userId,
-  timezone,
-}: {
-  branchId: string;
-  userId: string;
-  timezone: string;
-}) {
-  const weekStart = getWeekStart(getBranchLocalDate(timezone));
-  const days = await getMyPublishedScheduleForWeek(branchId, userId, weekStart);
-  const todayStr = getBranchLocalDateString(timezone);
-
-  return (
-    <div className="space-y-2">
-      {days.map((day, i) => {
-        const isToday = day.date === todayStr;
-        return (
-          <Card
-            key={day.date}
-            className={`flex items-center justify-between ${
-              isToday ? "border-brand-maroon bg-brand-cream dark:bg-zinc-800" : ""
-            }`}
-          >
-            <span className="font-medium text-zinc-900 dark:text-zinc-50">
-              {DAY_LABELS[i]}{" "}
-              <span className="font-normal text-zinc-400 dark:text-zinc-500">
-                {day.date.slice(5)}
-              </span>
-              {isToday && (
-                <span className="ml-2 rounded-full bg-brand-maroon px-2 py-0.5 text-xs text-white">
-                  Hari Ini
-                </span>
-              )}
-            </span>
-            {day.status === "off" && (
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">🌴 Off</span>
-            )}
-            {day.status === "working" && (
-              <span className="text-sm font-semibold text-brand-maroon dark:text-red-400">
-                🕐 {day.startTime}–{day.endTime}
-                {day.shiftName ? ` (${day.shiftName})` : ""}
-              </span>
-            )}
-            {day.status === "unpublished" && (
-              <span className="text-sm text-zinc-400 dark:text-zinc-600">Belum dijadualkan</span>
-            )}
-          </Card>
-        );
-      })}
     </div>
   );
 }
@@ -163,8 +103,6 @@ async function TodaysRoster({
     getLateCountToday(branchId, userId, today),
     getMyTodaysAttendance(branchId, userId, timezone),
   ]);
-
-  const myShift = rows.find((r) => r.staffId && r.status === "working");
 
   return (
     <div className="space-y-5">
@@ -192,7 +130,9 @@ async function TodaysRoster({
           <div className="mt-3">
             <ClockButton
               branchSlug={branchSlug}
-              clockInTime={myAttendance.clockInAt ? formatBranchTime(myAttendance.clockInAt, timezone) : null}
+              clockInTime={
+                myAttendance.clockInAt ? formatBranchTime(myAttendance.clockInAt, timezone) : null
+              }
               clockOutTime={
                 myAttendance.clockOutAt ? formatBranchTime(myAttendance.clockOutAt, timezone) : null
               }
