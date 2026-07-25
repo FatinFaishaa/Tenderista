@@ -250,3 +250,17 @@ export async function getLowStockItems(
       }));
   });
 }
+
+/** Owner-only, permanent: hard-deletes the stock item. No other table references
+ * StockItem, so this is a simple row delete with no cascade concerns — unlike
+ * Staff deletion, there's no history to lose here. */
+export async function deleteStockItem(
+  branchId: string,
+  userId: string,
+  id: string
+): Promise<void> {
+  const result = await withTenantContext({ userId, branchId }, (tx) =>
+    tx.stockItem.deleteMany({ where: { id, branchId } })
+  );
+  if (result.count === 0) throw new StockItemNotFoundError("Stock item not found.");
+}

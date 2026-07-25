@@ -4,6 +4,7 @@ import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { stockItemSchema } from "@/lib/validation/stock";
 import {
   updateStockItem,
+  deleteStockItem,
   StockItemNotFoundError,
   StockItemNameConflictError,
 } from "@/lib/inventory/queries";
@@ -56,6 +57,24 @@ export async function PATCH(
     }
     if (err instanceof StockItemNameConflictError) {
       return NextResponse.json({ error: err.message }, { status: 409 });
+    }
+    throw err;
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ branchSlug: string; id: string }> }
+) {
+  const { branchSlug, id } = await params;
+  const auth = await requireOwner(branchSlug);
+  if ("error" in auth) return auth.error;
+  try {
+    await deleteStockItem(auth.branch.id, auth.userId, id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (err instanceof StockItemNotFoundError) {
+      return NextResponse.json({ error: err.message }, { status: 404 });
     }
     throw err;
   }
