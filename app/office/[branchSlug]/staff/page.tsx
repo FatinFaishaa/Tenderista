@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Eye, Pencil } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { listStaffForBranch } from "@/lib/staff/queries";
@@ -9,6 +10,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StaffStatusButton } from "@/components/staff/StaffStatusButton";
 import { StaffDeleteButton } from "@/components/staff/StaffDeleteButton";
+
+const actionLinkClass =
+  "flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg border border-zinc-200 px-2 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:text-zinc-100";
 
 export default async function StaffPage({
   params,
@@ -67,11 +71,14 @@ export default async function StaffPage({
               </Badge>
             </div>
             {isOwner && (
-              <div className="mt-3 flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-                <Link href={`/office/${branchSlug}/staff/${member.id}/edit`} className="flex-1">
-                  <Button variant="secondary" className="w-full px-3 py-1.5 text-sm">
-                    Edit
-                  </Button>
+              <div className="mt-3 flex gap-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                <Link href={`/office/${branchSlug}/staff/${member.id}`} className={actionLinkClass}>
+                  <Eye className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Details</span>
+                </Link>
+                <Link href={`/office/${branchSlug}/staff/${member.id}/edit`} className={actionLinkClass}>
+                  <Pencil className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Edit</span>
                 </Link>
                 <StaffStatusButton
                   branchSlug={branchSlug}

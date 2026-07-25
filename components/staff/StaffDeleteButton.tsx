@@ -38,10 +38,10 @@ export function StaffDeleteButton({
       type="button"
       onClick={onDelete}
       disabled={loading}
-      className="flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 disabled:opacity-60 dark:border-red-900 dark:text-red-400"
+      className="flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg border border-red-200 px-2 py-1.5 text-xs font-medium text-red-600 disabled:opacity-60 dark:border-red-900 dark:text-red-400"
     >
-      <Trash2 className="h-3.5 w-3.5" />
-      {loading ? "Memadam…" : "Delete"}
+      <Trash2 className="h-3.5 w-3.5 shrink-0" />
+      <span className="truncate">{loading ? "…" : "Delete"}</span>
     </button>
   );
 }
