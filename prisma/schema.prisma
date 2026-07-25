@@ -987,11 +987,21 @@ model AnnouncementRead {
 // computes "overdue" rather than storing it. A future movement ledger can be added
 // additively without changing this table's shape.
 
+enum StockCategory {
+  kitchen
+  barista
+  cashier
+  kedai
+
+  @@map("stock_category_enum")
+}
+
 model StockItem {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   branchId        String   @map("branch_id") @db.Uuid
   name            String   @db.VarChar(150)
   unit            String?  @db.VarChar(20)
+  category        StockCategory @default(kedai)
   currentQuantity Decimal  @default(0) @map("current_quantity") @db.Decimal(10, 2)
   minAlertLevel   Decimal  @default(0) @map("min_alert_level") @db.Decimal(10, 2)
   isActive        Boolean  @default(true) @map("is_active")

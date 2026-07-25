@@ -28,7 +28,7 @@ export default async function EditStockItemPage({
       <StockItemForm
         branchSlug={branchSlug}
         itemId={item.id}
-        initialValues={{ name: item.name, unit: item.unit, minAlertLevel: item.minAlertLevel }}
+        initialValues={{ name: item.name, unit: item.unit, category: item.category, minAlertLevel: item.minAlertLevel }}
       />
     </div>
   );

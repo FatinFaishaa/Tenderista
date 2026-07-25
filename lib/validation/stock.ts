@@ -7,6 +7,16 @@ const quantityField = z.coerce
   .max(99_999_999.99, "Too large")
   .multipleOf(0.01, "Use at most 2 decimal places");
 
+export const STOCK_CATEGORIES = ["kitchen", "barista", "cashier", "kedai"] as const;
+export type StockCategoryValue = (typeof STOCK_CATEGORIES)[number];
+
+export const STOCK_CATEGORY_LABELS: Record<StockCategoryValue, string> = {
+  kitchen: "Kitchen",
+  barista: "Barista",
+  cashier: "Cashier",
+  kedai: "Kedai (Umum)",
+};
+
 export const stockItemSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(150, "Name is too long"),
   unit: z
@@ -15,6 +25,7 @@ export const stockItemSchema = z.object({
     .max(20, "Unit is too long")
     .optional()
     .transform((value) => (value ? value : undefined)),
+  category: z.enum(STOCK_CATEGORIES),
   minAlertLevel: quantityField,
 });
 

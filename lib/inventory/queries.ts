@@ -1,4 +1,5 @@
 import { withTenantContext } from "@/lib/db";
+import type { StockCategoryValue } from "@/lib/validation/stock";
 
 export class StockItemNotFoundError extends Error {}
 export class StockItemNameConflictError extends Error {}
@@ -7,6 +8,7 @@ export type StockItemRow = {
   id: string;
   name: string;
   unit: string | null;
+  category: StockCategoryValue;
   currentQuantity: number;
   minAlertLevel: number;
   isActive: boolean;
@@ -17,6 +19,7 @@ function toRow(item: {
   id: string;
   name: string;
   unit: string | null;
+  category: string;
   currentQuantity: unknown;
   minAlertLevel: unknown;
   isActive: boolean;
@@ -27,6 +30,7 @@ function toRow(item: {
     id: item.id,
     name: item.name,
     unit: item.unit,
+    category: item.category as StockCategoryValue,
     currentQuantity,
     minAlertLevel,
     isActive: item.isActive,
@@ -60,6 +64,33 @@ export async function listActiveStockItems(
   });
 }
 
+export type StockCategoryGroup = {
+  category: StockCategoryValue;
+  items: StockItemRow[];
+};
+
+/** Same rows as listStockItems/listActiveStockItems, reshaped into one group per
+ * category (fixed order: kitchen, barista, cashier, kedai) — used by both the
+ * Owner management page and the staff-facing update page, so category sections
+ * appear in a consistent order regardless of who's looking. Empty categories are
+ * still included (with an empty items array) so the UI can show "no items yet"
+ * per category rather than silently omitting it. */
+export async function listStockItemsGroupedByCategory(
+  branchId: string,
+  userId: string,
+  activeOnly: boolean
+): Promise<StockCategoryGroup[]> {
+  const rows = activeOnly
+    ? await listActiveStockItems(branchId, userId)
+    : await listStockItems(branchId, userId);
+
+  const order: StockCategoryValue[] = ["kitchen", "barista", "cashier", "kedai"];
+  return order.map((category) => ({
+    category,
+    items: rows.filter((r) => r.category === category),
+  }));
+}
+
 export async function getStockItemById(
   branchId: string,
   userId: string,
@@ -82,7 +113,13 @@ function isUniqueConstraintError(err: unknown): boolean {
 export async function createStockItem(
   branchId: string,
   userId: string,
-  input: { name: string; unit?: string; minAlertLevel: number; currentQuantity: number }
+  input: {
+    name: string;
+    unit?: string;
+    category: StockCategoryValue;
+    minAlertLevel: number;
+    currentQuantity: number;
+  }
 ): Promise<{ id: string }> {
   try {
     const item = await withTenantContext({ userId, branchId }, (tx) =>
@@ -91,6 +128,7 @@ export async function createStockItem(
           branchId,
           name: input.name,
           unit: input.unit ?? null,
+          category: input.category,
           minAlertLevel: input.minAlertLevel,
           currentQuantity: input.currentQuantity,
           createdBy: userId,
@@ -106,12 +144,12 @@ export async function createStockItem(
   }
 }
 
-/** Owner-only: name/unit/minAlertLevel — never touches currentQuantity. */
+/** Owner-only: name/unit/category/minAlertLevel — never touches currentQuantity. */
 export async function updateStockItem(
   branchId: string,
   userId: string,
   id: string,
-  input: { name: string; unit?: string; minAlertLevel: number }
+  input: { name: string; unit?: string; category: StockCategoryValue; minAlertLevel: number }
 ): Promise<void> {
   try {
     const result = await withTenantContext({ userId, branchId }, (tx) =>
@@ -120,6 +158,7 @@ export async function updateStockItem(
         data: {
           name: input.name,
           unit: input.unit ?? null,
+          category: input.category,
           minAlertLevel: input.minAlertLevel,
           updatedBy: userId,
         },

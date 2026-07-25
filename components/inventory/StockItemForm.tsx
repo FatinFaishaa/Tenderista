@@ -1,21 +1,29 @@
 "use client";
-
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { FormError } from "@/components/ui/FormError";
+import { STOCK_CATEGORIES, STOCK_CATEGORY_LABELS, type StockCategoryValue } from "@/lib/validation/stock";
 
 type Props = {
   branchSlug: string;
   itemId?: string;
-  initialValues?: { name: string; unit: string | null; minAlertLevel: number };
+  initialValues?: {
+    name: string;
+    unit: string | null;
+    category: StockCategoryValue;
+    minAlertLevel: number;
+  };
 };
 
 export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
   const router = useRouter();
   const [name, setName] = useState(initialValues?.name ?? "");
   const [unit, setUnit] = useState(initialValues?.unit ?? "");
+  const [category, setCategory] = useState<StockCategoryValue>(
+    initialValues?.category ?? "kedai"
+  );
   const [minAlertLevel, setMinAlertLevel] = useState(
     initialValues ? String(initialValues.minAlertLevel) : "0"
   );
@@ -25,12 +33,10 @@ export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
   const [currentQuantity, setCurrentQuantity] = useState("0");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   const isEditing = Boolean(itemId);
   const endpoint = isEditing
     ? `/api/branches/${branchSlug}/stock-items/${itemId}`
     : `/api/branches/${branchSlug}/stock-items`;
-
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -40,7 +46,9 @@ export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isEditing ? { name, unit, minAlertLevel } : { name, unit, minAlertLevel, currentQuantity }
+          isEditing
+            ? { name, unit, category, minAlertLevel }
+            : { name, unit, category, minAlertLevel, currentQuantity }
         ),
       });
       const data = await res.json();
@@ -54,7 +62,6 @@ export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
       setLoading(false);
     }
   }
-
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <FormError message={error} />
@@ -68,6 +75,21 @@ export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
           maxLength={150}
           required
         />
+      </div>
+      <div>
+        <Label htmlFor="category">Category</Label>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as StockCategoryValue)}
+          className="min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        >
+          {STOCK_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {STOCK_CATEGORY_LABELS[cat]}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <Label htmlFor="unit">Unit (optional)</Label>
