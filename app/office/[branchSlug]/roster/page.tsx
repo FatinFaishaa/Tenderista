@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
-import { getRosterForWeek, getDailyRoster } from "@/lib/roster/queries";
+import { getRosterForWeek, getDailyRosterWithProfile, getLateCountToday } from "@/lib/roster/queries";
 import { listShifts } from "@/lib/shifts/queries";
 import { getBranchLocalDate, getBranchLocalDateString } from "@/lib/utils/branchDate";
 import { getWeekStart, getWeekDates, addDays, formatDateKey, parseDateKey } from "@/lib/utils/week";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { RosterCellEditor } from "@/components/roster/RosterCellEditor";
 import { PublishWeekButton } from "@/components/roster/PublishWeekButton";
-import { DailyRosterView } from "@/components/roster/DailyRosterView";
+import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
 import { DatePickerNav } from "@/components/ui/DatePickerNav";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -205,14 +205,17 @@ async function DailyRoster({
   const dateStr = date ?? todayStr;
   const selectedDate = parseDateKey(dateStr);
 
-  const rows = await getDailyRoster(branch.id, userId, selectedDate);
+  const [rows, lateCount] = await Promise.all([
+    getDailyRosterWithProfile(branch.id, userId, selectedDate),
+    getLateCountToday(branch.id, userId, selectedDate),
+  ]);
 
   return (
     <div>
       <div className="mb-4">
         <DatePickerNav initialDate={dateStr} extraParams={{ view: "daily" }} />
       </div>
-      <DailyRosterView rows={rows} date={dateStr} timezone={branch.timezone} />
+      <DailyRosterCards rows={rows} lateCount={lateCount} />
     </div>
   );
 }
