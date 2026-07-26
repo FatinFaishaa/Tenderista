@@ -212,8 +212,8 @@ async function DailyRoster({
 
   return (
     <div>
-      <div className="mb-4">
-        <DatePickerNav initialDate={dateStr} extraParams={{ view: "daily" }} />
+      <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <DatePickerNav initialDate={dateStr} extraParams={{ view: "daily" }} className="w-full" />
       </div>
       <DailyRosterCards rows={rows} lateCount={lateCount} />
     </div>

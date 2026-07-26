@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/Input";
 export function DatePickerNav({
   initialDate,
   extraParams,
+  className,
 }: {
   initialDate: string;
   extraParams?: Record<string, string>;
+  className?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -27,7 +29,7 @@ export function DatePickerNav({
         const params = new URLSearchParams({ date: e.target.value, ...extraParams });
         router.push(`${pathname}?${params.toString()}`);
       }}
-      className="w-auto"
+      className={className ?? "w-auto"}
     />
   );
 }
