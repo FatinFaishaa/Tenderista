@@ -24,7 +24,6 @@ function formatWeekRange(weekStart: Date): string {
   const endStr = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
-    year: "numeric",
     timeZone: "UTC",
   }).format(weekEnd);
   return `${startStr} – ${endStr}`;
@@ -70,21 +69,21 @@ export async function MySchedule({
   return (
     <div className="space-y-4">
       {/* Week navigator */}
-      <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <Link
           href={prevHref}
-          className="flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
+          className="flex items-center gap-0.5 text-xs font-medium text-brand-maroon dark:text-red-400"
         >
-          <ChevronLeft className="h-4 w-4" /> Minggu Lepas
+          <ChevronLeft className="h-3.5 w-3.5" /> Prev
         </Link>
-        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
           {formatWeekRange(weekStart)}
         </span>
         <Link
           href={nextHref}
-          className="flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
+          className="flex items-center gap-0.5 text-xs font-medium text-brand-maroon dark:text-red-400"
         >
-          Minggu Depan <ChevronRight className="h-4 w-4" />
+          Next <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
 
