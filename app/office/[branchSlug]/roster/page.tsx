@@ -147,7 +147,7 @@ async function WeeklyRoster({
           </Link>
           <span className="flex items-center gap-1 text-xs font-semibold text-zinc-900 dark:text-zinc-50">
             <CalendarDays className="h-3.5 w-3.5 text-brand-maroon" />
-            {formatDateKey(weekStart)} – {formatDateKey(weekDates[6])}
+            {new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(weekStart)} – {new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(weekDates[6])}
           </span>
           <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, 7))}`}>
             <Button variant="secondary" className="flex items-center gap-1 px-2.5 py-1 text-xs">
@@ -177,7 +177,7 @@ async function WeeklyRoster({
               <div className="mb-2 flex items-center gap-2">
                 <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={36} />
                 <span className="font-semibold break-words text-zinc-900 dark:text-zinc-50">
-                  {row.staffName}
+                  {row.staffName.split(" ")[0]}
                 </span>
               </div>
               <div className="space-y-1.5">
@@ -322,7 +322,7 @@ async function PreviewRoster({
                   <td className="whitespace-nowrap p-2">
                     <div className="flex items-center gap-2">
                       <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={28} />
-                      <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.staffName}</span>
+                      <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.staffName.split(" ")[0]}</span>
                     </div>
                   </td>
                   {weekDates.map((d) => {

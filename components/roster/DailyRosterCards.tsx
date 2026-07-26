@@ -64,7 +64,7 @@ export function DailyRosterCards({
                 <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={44} />
                 <div className="flex-1 truncate">
                   <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                    {row.staffName}
+                    {row.staffName.split(" ")[0]}
                   </p>
                   <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                     Staff{row.jobPosition ? ` • ${row.jobPosition}` : ""}
