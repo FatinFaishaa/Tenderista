@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
+import { Pencil } from "lucide-react";
 
 type ShiftOption = { id: string; name: string; startTime: string; endTime: string };
 
@@ -95,14 +96,20 @@ export function RosterCellEditor({
     return (
       <button
         onClick={() => setEditing(true)}
-        className={cn("min-h-11 w-full rounded-lg border px-2 py-1.5 text-center text-xs", pillClass)}
-      >
-        {content}
-        {!cell.isOffDay && cell.startTime && !cell.isPublished && (
-          <span className="ml-1 text-amber-600" title="Not yet published">
-            •
-          </span>
+        className={cn(
+          "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs",
+          pillClass
         )}
+      >
+        <span className="flex items-center gap-1">
+          {content}
+          {!cell.isOffDay && cell.startTime && !cell.isPublished && (
+            <span className="text-amber-600" title="Not yet published">
+              •
+            </span>
+          )}
+        </span>
+        <Pencil className="h-3.5 w-3.5 shrink-0 opacity-60" />
       </button>
     );
   }

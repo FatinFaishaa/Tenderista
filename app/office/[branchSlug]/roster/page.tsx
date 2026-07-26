@@ -121,24 +121,24 @@ async function WeeklyRoster({
 
   return (
     <div>
-      <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex items-center justify-between gap-2">
           <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, -7))}`}>
-            <Button variant="secondary" className="flex items-center gap-1 px-3 py-1.5 text-sm">
-              <ChevronLeft className="h-4 w-4" /> Prev
+            <Button variant="secondary" className="flex items-center gap-1 px-2.5 py-1 text-xs">
+              <ChevronLeft className="h-3.5 w-3.5" /> Prev
             </Button>
           </Link>
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            <CalendarDays className="h-4 w-4 text-brand-maroon" />
+          <span className="flex items-center gap-1 text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+            <CalendarDays className="h-3.5 w-3.5 text-brand-maroon" />
             {formatDateKey(weekStart)} – {formatDateKey(weekDates[6])}
           </span>
           <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, 7))}`}>
-            <Button variant="secondary" className="flex items-center gap-1 px-3 py-1.5 text-sm">
-              Next <ChevronRight className="h-4 w-4" />
+            <Button variant="secondary" className="flex items-center gap-1 px-2.5 py-1 text-xs">
+              Next <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
           <Badge tone={fullyPublished ? "success" : "warning"}>
             {fullyPublished ? "Published" : "Not Published"}
           </Badge>
@@ -151,41 +151,30 @@ async function WeeklyRoster({
           No active staff yet — add staff first.
         </p>
       ) : (
-        <>
-        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-brand-maroon dark:text-red-400">
-          Leret ke kanan untuk lihat &amp; edit hari lain <ChevronRight className="h-3.5 w-3.5" />
-        </p>
-        <div className="relative">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead>
-              <tr>
-                <th className="sticky left-0 z-10 bg-white p-2 text-left text-zinc-500 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] dark:bg-zinc-900 dark:text-zinc-400">Staff</th>
-                {weekDates.map((d, i) => (
-                  <th
-                    key={formatDateKey(d)}
-                    className="p-2 text-left text-zinc-500 dark:text-zinc-400"
-                  >
-                    {DAY_LABELS[i]}
-                    <br />
-                    <span className="font-normal">{formatDateKey(d).slice(5)}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {roster.map((row) => (
-                <tr key={row.staffId}>
-                  <td className="sticky left-0 z-10 whitespace-nowrap bg-white p-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] dark:bg-zinc-900">
-                    <div className="flex items-center gap-2">
-                      <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={32} />
-                      <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.staffName}</span>
-                    </div>
-                  </td>
-                  {weekDates.map((d) => {
-                    const key = formatDateKey(d);
-                    return (
-                      <td key={key} className="min-w-28 p-1 align-top">
+        <div className="space-y-3">
+          {roster.map((row) => (
+            <div
+              key={row.staffId}
+              className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={36} />
+                <span className="font-semibold break-words text-zinc-900 dark:text-zinc-50">
+                  {row.staffName}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {weekDates.map((d, i) => {
+                  const key = formatDateKey(d);
+                  return (
+                    <div key={key} className="flex items-center gap-2">
+                      <div className="w-14 shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
+                        {DAY_LABELS[i]}
+                        <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                          {key.slice(5)}
+                        </div>
+                      </div>
+                      <div className="flex-1">
                         <RosterCellEditor
                           branchSlug={branchSlug}
                           staffId={row.staffId}
@@ -193,17 +182,15 @@ async function WeeklyRoster({
                           cell={row.days[key]}
                           shifts={shifts}
                         />
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-            </table>
-          </div>
-          <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-brand-cream to-transparent dark:from-zinc-950" />
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-4 px-1 text-xs text-zinc-600 dark:text-zinc-300">
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          <div className="flex flex-wrap items-center gap-4 px-1 text-xs text-zinc-600 dark:text-zinc-300">
             <span className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded-full border border-amber-300 bg-amber-100 dark:border-amber-800 dark:bg-amber-950" />
               Morning
@@ -217,12 +204,11 @@ async function WeeklyRoster({
               Off
             </span>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
 }
-
 async function DailyRoster({
   userId,
   branch,
