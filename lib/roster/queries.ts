@@ -382,3 +382,57 @@ export async function getLateCountToday(
     });
   });
 }
+
+/** Same staff x day grid as getRosterForWeek, but only ever includes rows where
+ * isPublished is true — used by the staff-facing "see everyone's week" preview,
+ * where showing an Owner's still-unpublished draft would be misleading. Unpublished
+ * or missing days fall back to the same empty cell as the editable Owner view. */
+export async function getPublishedRosterForWeek(
+  branchId: string,
+  userId: string,
+  weekStart: Date
+): Promise<RosterStaffRow[]> {
+  const weekDates = getWeekDates(weekStart);
+  const weekEnd = weekDates[6];
+
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const [staffList, scheduleRows] = await Promise.all([
+      tx.staff.findMany({
+        where: { branchId, status: "active" },
+        include: { user: { select: { name: true, avatarEmoji: true, avatarImage: true } } },
+        orderBy: { user: { name: "asc" } },
+      }),
+      tx.schedule.findMany({
+        where: { branchId, date: { gte: weekStart, lte: weekEnd }, isPublished: true },
+      }),
+    ]);
+
+    const byKey = new Map(
+      scheduleRows.map((row) => [`${row.staffId}_${formatDateKey(row.date)}`, row])
+    );
+
+    return staffList.map((staff) => {
+      const days: Record<string, RosterCell> = {};
+      for (const d of weekDates) {
+        const key = formatDateKey(d);
+        const row = byKey.get(`${staff.id}_${key}`);
+        days[key] = row
+          ? {
+              isOffDay: row.isOffDay,
+              shiftId: row.shiftId,
+              startTime: row.startTime ? dateToTimeString(row.startTime) : null,
+              endTime: row.endTime ? dateToTimeString(row.endTime) : null,
+              isPublished: row.isPublished,
+            }
+          : { ...EMPTY_CELL };
+      }
+      return {
+        staffId: staff.id,
+        staffName: staff.user.name,
+        avatarEmoji: staff.user.avatarEmoji ?? "😊",
+        avatarImage: staff.user.avatarImage,
+        days,
+      };
+    });
+  });
+}
