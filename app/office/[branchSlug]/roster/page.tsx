@@ -151,11 +151,16 @@ async function WeeklyRoster({
           No active staff yet — add staff first.
         </p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
+        <>
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-brand-maroon dark:text-red-400">
+          Leret ke kanan untuk lihat &amp; edit hari lain <ChevronRight className="h-3.5 w-3.5" />
+        </p>
+        <div className="relative">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr>
-                <th className="p-2 text-left text-zinc-500 dark:text-zinc-400">Staff</th>
+                <th className="sticky left-0 z-10 bg-white p-2 text-left text-zinc-500 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] dark:bg-zinc-900 dark:text-zinc-400">Staff</th>
                 {weekDates.map((d, i) => (
                   <th
                     key={formatDateKey(d)}
@@ -171,7 +176,7 @@ async function WeeklyRoster({
             <tbody>
               {roster.map((row) => (
                 <tr key={row.staffId}>
-                  <td className="whitespace-nowrap p-2">
+                  <td className="sticky left-0 z-10 whitespace-nowrap bg-white p-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] dark:bg-zinc-900">
                     <div className="flex items-center gap-2">
                       <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={32} />
                       <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.staffName}</span>
@@ -194,7 +199,10 @@ async function WeeklyRoster({
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
+          <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-brand-cream to-transparent dark:from-zinc-950" />
+          </div>
           <div className="mt-3 flex flex-wrap items-center gap-4 px-1 text-xs text-zinc-600 dark:text-zinc-300">
             <span className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded-full border border-amber-300 bg-amber-100 dark:border-amber-800 dark:bg-amber-950" />
@@ -209,7 +217,7 @@ async function WeeklyRoster({
               Off
             </span>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
