@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { RosterCellEditor } from "@/components/roster/RosterCellEditor";
 import { PublishWeekButton } from "@/components/roster/PublishWeekButton";
 import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
-import { DatePickerNav } from "@/components/ui/DatePickerNav";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -212,8 +212,27 @@ async function DailyRoster({
 
   return (
     <div>
-      <div className="mb-4">
-        <DatePickerNav initialDate={dateStr} extraParams={{ view: "daily" }} />
+      <div className="mb-4 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <Link
+          href={`?view=daily&date=${formatDateKey(addDays(selectedDate, -1))}`}
+          className="flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Link>
+        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          {new Intl.DateTimeFormat("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "UTC",
+          }).format(new Date(`${dateStr}T00:00:00.000Z`))}
+        </span>
+        <Link
+          href={`?view=daily&date=${formatDateKey(addDays(selectedDate, 1))}`}
+          className="flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Link>
       </div>
       <DailyRosterCards rows={rows} lateCount={lateCount} />
     </div>
