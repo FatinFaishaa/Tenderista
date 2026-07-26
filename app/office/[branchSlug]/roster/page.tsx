@@ -13,6 +13,7 @@ import { PublishWeekButton } from "@/components/roster/PublishWeekButton";
 import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { Avatar } from "@/components/staff/Avatar";
+import { cn } from "@/lib/utils/cn";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -35,14 +36,20 @@ export default async function RosterPage({
     redirect(`/office/${branchSlug}/dashboard`);
   }
   const isOwner = branch.role === "owner";
-  const view: "weekly" | "daily" = isOwner && viewParam !== "daily" ? "weekly" : "daily";
+  const view: "weekly" | "daily" | "preview" = !isOwner
+    ? "daily"
+    : viewParam === "daily"
+    ? "daily"
+    : viewParam === "preview"
+    ? "preview"
+    : "weekly";
 
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            {view === "weekly" ? "Weekly Roster" : "Daily Roster"}
+            {view === "weekly" ? "Weekly Roster" : view === "preview" ? "Preview Week" : "Daily Roster"}
           </h1>
           {isOwner && (
             <Link
@@ -63,6 +70,14 @@ export default async function RosterPage({
                 Weekly
               </Button>
             </Link>
+            <Link href="?view=preview">
+              <Button
+                variant={view === "preview" ? "primary" : "secondary"}
+                className="px-3 py-1.5 text-sm"
+              >
+                Preview
+              </Button>
+            </Link>
             <Link href="?view=daily">
               <Button
                 variant={view === "daily" ? "primary" : "secondary"}
@@ -77,6 +92,8 @@ export default async function RosterPage({
 
       {view === "weekly" ? (
         <WeeklyRoster branchSlug={branchSlug} userId={session.userId} branch={branch} week={week} />
+      ) : view === "preview" ? (
+        <PreviewRoster userId={session.userId} branch={branch} week={week} />
       ) : (
         <DailyRoster userId={session.userId} branch={branch} date={date} />
       )}
@@ -252,6 +269,121 @@ async function DailyRoster({
         </Link>
       </div>
       <DailyRosterCards rows={rows} lateCount={lateCount} />
+    </div>
+  );
+}
+
+/** Read-only "how staff will see it" preview of a published (or draft) week — a single
+ * bordered card with a compact grid, no click targets at all. Deliberately reuses the
+ * same table/grid shape the Owner's old editable Weekly view used, since a horizontal
+ * table is fine for pure viewing; the click-target problems that forced Weekly Roster
+ * onto per-staff cards don't apply here because nothing in this view is interactive. */
+async function PreviewRoster({
+  userId,
+  branch,
+  week,
+}: {
+  userId: string;
+  branch: { id: string; timezone: string };
+  week?: string;
+}) {
+  const weekStart = week ? parseDateKey(week) : getWeekStart(getBranchLocalDate(branch.timezone));
+  const weekDates = getWeekDates(weekStart);
+
+  const roster = await getRosterForWeek(branch.id, userId, weekStart);
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+        Begini staff akan nampak jadual yang telah publish.
+      </p>
+
+      {roster.length === 0 ? (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">No active staff yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] border-collapse text-sm">
+            <thead>
+              <tr>
+                <th className="p-2 text-left text-xs text-zinc-500 dark:text-zinc-400">Staff</th>
+                {weekDates.map((d, i) => (
+                  <th key={formatDateKey(d)} className="p-2 text-left text-xs text-zinc-500 dark:text-zinc-400">
+                    {DAY_LABELS[i]}
+                    <div className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">
+                      {formatDateKey(d).slice(5)}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {roster.map((row) => (
+                <tr key={row.staffId} className="border-t border-zinc-100 dark:border-zinc-800">
+                  <td className="whitespace-nowrap p-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={28} />
+                      <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.staffName}</span>
+                    </div>
+                  </td>
+                  {weekDates.map((d) => {
+                    const key = formatDateKey(d);
+                    const cell = row.days[key];
+                    const startHour = cell.startTime ? Number(cell.startTime.split(":")[0]) : null;
+                    const isMorning = startHour !== null && startHour < 12;
+
+                    let badgeClass =
+                      "border-zinc-200 bg-zinc-50 text-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-700";
+                    let label: React.ReactNode = <span>—</span>;
+
+                    if (cell.isOffDay) {
+                      badgeClass =
+                        "border-zinc-200 bg-zinc-100 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400";
+                      label = "OFF";
+                    } else if (cell.startTime && cell.endTime) {
+                      badgeClass = isMorning
+                        ? "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
+                        : "border-pink-200 bg-pink-100 text-pink-700 dark:border-pink-900 dark:bg-pink-950 dark:text-pink-300";
+                      label = (
+                        <>
+                          {cell.startTime}–{cell.endTime}
+                        </>
+                      );
+                    }
+
+                    return (
+                      <td key={key} className="p-1 align-top">
+                        <div
+                          className={cn(
+                            "rounded-lg border px-2 py-1.5 text-center text-xs font-semibold",
+                            badgeClass
+                          )}
+                        >
+                          {label}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-zinc-100 px-1 pt-3 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full border border-amber-300 bg-amber-100 dark:border-amber-800 dark:bg-amber-950" />
+          Morning
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full border border-pink-300 bg-pink-100 dark:border-pink-800 dark:bg-pink-950" />
+          Evening
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full border border-zinc-300 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800" />
+          Off
+        </span>
+      </div>
     </div>
   );
 }
