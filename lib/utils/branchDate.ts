@@ -33,3 +33,19 @@ export function formatBranchTime(date: Date, timezone: string): string {
 export function getBranchLocalTimeString(timezone: string): string {
   return formatBranchTime(new Date(), timezone);
 }
+
+/** Start (inclusive) and end (exclusive) Date bounds for the current calendar month,
+ * in the branch's own timezone — used to sum attendance/earnings for "this month". */
+export function getBranchLocalMonthRange(timezone: string): { start: Date; end: Date } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const year = Number(parts.find((p) => p.type === "year")!.value);
+  const month = Number(parts.find((p) => p.type === "month")!.value);
+
+  const start = new Date(Date.UTC(year, month - 1, 1));
+  const end = new Date(Date.UTC(year, month, 1));
+  return { start, end };
+}

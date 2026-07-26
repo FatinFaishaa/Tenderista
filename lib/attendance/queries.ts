@@ -1,6 +1,6 @@
 import { withTenantContext } from "@/lib/db";
 import { dateToTimeString } from "@/lib/utils/timeOfDay";
-import { getBranchLocalDate, getBranchLocalTimeString } from "@/lib/utils/branchDate";
+import { getBranchLocalDate, getBranchLocalTimeString, getBranchLocalMonthRange } from "@/lib/utils/branchDate";
 
 // V1: self clock in/out only, compared against the existing Schedule roster. No
 // breaks, no leave integration, no manual correction, no overtime/payroll split —
@@ -183,5 +183,50 @@ const attendanceByStaff = new Map(
         status: attendance?.status ?? null,
       };
     });
+  });
+}
+
+export type MyEarningsSummary =
+  | { hasStaffRecord: false }
+  | { hasStaffRecord: true; salaryType: "monthly"; amount: number }
+  | { hasStaffRecord: true; salaryType: "hourly"; amount: number; hourlyRate: number; workedHours: number };
+
+/** Rough current-month earnings estimate for the staff-facing dashboard.
+ * Monthly-salary staff just see their basicSalary. Hourly staff see
+ * sum(workedHours this month) x hourlyRate — overtime is excluded on purpose,
+ * since overtime pay is decided manually by the Owner, not auto-calculated. */
+export async function getMyMonthlyEarnings(
+  branchId: string,
+  userId: string,
+  timezone: string
+): Promise<MyEarningsSummary> {
+  const { start, end } = getBranchLocalMonthRange(timezone);
+
+  return withTenantContext({ userId, branchId }, async (tx) => {
+    const staff = await tx.staff.findUnique({ where: { branchId_userId: { branchId, userId } } });
+    if (!staff) return { hasStaffRecord: false };
+
+    if (staff.salaryType === "monthly") {
+      return {
+        hasStaffRecord: true,
+        salaryType: "monthly",
+        amount: staff.basicSalary ? Number(staff.basicSalary) : 0,
+      };
+    }
+
+    const agg = await tx.attendanceRecord.aggregate({
+      where: { staffId: staff.id, date: { gte: start, lt: end } },
+      _sum: { workedHours: true },
+    });
+    const workedHours = agg._sum.workedHours ? Number(agg._sum.workedHours) : 0;
+    const hourlyRate = staff.hourlyRate ? Number(staff.hourlyRate) : 0;
+
+    return {
+      hasStaffRecord: true,
+      salaryType: "hourly",
+      amount: workedHours * hourlyRate,
+      hourlyRate,
+      workedHours,
+    };
   });
 }

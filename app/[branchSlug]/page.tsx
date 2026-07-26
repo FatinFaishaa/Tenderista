@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getMyProfile } from "@/lib/staff/queries";
 import { Avatar } from "@/components/staff/Avatar";
-import { getMyTodaysAttendance } from "@/lib/attendance/queries";
+import { getMyTodaysAttendance, getMyMonthlyEarnings } from "@/lib/attendance/queries";
 import { getTodaysDailyTasks } from "@/lib/dailyTasks/queries";
 import { getProgressByDepartment } from "@/lib/checklists/queries";
 import { getClosingProgressByDepartment } from "@/lib/closingChecklists/queries";
@@ -13,6 +13,7 @@ import { getTodaysScheduleSummary } from "@/lib/roster/queries";
 import { listAnnouncements } from "@/lib/announcements/queries";
 import { ClockButton } from "@/components/attendance/ClockButton";
 import { formatBranchTime } from "@/lib/utils/branchDate";
+import { Wallet } from "lucide-react";
 
 function sumProgress(groups: { total: number; completed: number }[]) {
   return groups.reduce(
@@ -34,7 +35,7 @@ export default async function StaffHomePage({
   const branch = await resolveBranchForUser(branchSlug, userId);
   if (!branch) redirect("/branches");
 
-  const [profile, attendance, dailyTasks, openingGroups, closingGroups, schedule, announcements] =
+  const [profile, attendance, dailyTasks, openingGroups, closingGroups, schedule, announcements, earnings] =
     await Promise.all([
       getMyProfile(branch.id, userId),
       getMyTodaysAttendance(branch.id, userId, branch.timezone),
@@ -43,6 +44,7 @@ export default async function StaffHomePage({
       getClosingProgressByDepartment(branch.id, userId, branch.timezone),
       getTodaysScheduleSummary(branch.id, userId, new Date()),
       listAnnouncements(branch.id, userId),
+      getMyMonthlyEarnings(branch.id, userId, branch.timezone),
     ]);
 
   const opening = sumProgress(openingGroups);
@@ -66,6 +68,30 @@ export default async function StaffHomePage({
           </p>
         </div>
       </div>
+
+      {/* Estimated earnings this month */}
+      {earnings.hasStaffRecord && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
+              <Wallet className="h-6 w-6 text-green-700 dark:text-green-400" />
+            </span>
+            <div className="flex-1">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Anggaran Gaji Bulan Ini</p>
+              <p className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+                RM {earnings.amount.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              {earnings.salaryType === "hourly" ? (
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  {earnings.workedHours.toFixed(1)} jam × RM {earnings.hourlyRate.toFixed(2)}/jam
+                </p>
+              ) : (
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">Gaji bulanan tetap</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Clock In card */}
       {attendance.hasStaffRecord && (
