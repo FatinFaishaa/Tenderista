@@ -16,6 +16,8 @@ export type RosterCell = {
 export type RosterStaffRow = {
   staffId: string;
   staffName: string;
+  avatarEmoji: string;
+  avatarImage: string | null;
   days: Record<string, RosterCell>;
 };
 
@@ -42,7 +44,7 @@ export async function getRosterForWeek(
     const [staffList, scheduleRows] = await Promise.all([
       tx.staff.findMany({
         where: { branchId, status: "active" },
-        include: { user: { select: { name: true } } },
+        include: { user: { select: { name: true, avatarEmoji: true, avatarImage: true } } },
         orderBy: { user: { name: "asc" } },
       }),
       tx.schedule.findMany({
@@ -69,7 +71,13 @@ export async function getRosterForWeek(
             }
           : { ...EMPTY_CELL };
       }
-      return { staffId: staff.id, staffName: staff.user.name, days };
+      return {
+        staffId: staff.id,
+        staffName: staff.user.name,
+        avatarEmoji: staff.user.avatarEmoji ?? "😊",
+        avatarImage: staff.user.avatarImage,
+        days,
+      };
     });
   });
 }

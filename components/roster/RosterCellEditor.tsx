@@ -68,28 +68,38 @@ export function RosterCellEditor({
   }
 
   if (!editing) {
-    const isAssigned = cell.isOffDay || Boolean(cell.startTime);
+    // Colour-coded pill: gray = off, amber = morning shift (starts before noon),
+    // pink = evening shift (starts noon or later), dashed = nothing assigned yet.
+    const startHour = cell.startTime ? Number(cell.startTime.split(":")[0]) : null;
+    const isMorning = startHour !== null && startHour < 12;
+
+    let pillClass =
+      "border-dashed border-zinc-200 text-zinc-300 hover:border-blue-400 dark:border-zinc-800 dark:text-zinc-700";
+    let content: React.ReactNode = <span>—</span>;
+
+    if (cell.isOffDay) {
+      pillClass =
+        "border-zinc-200 bg-zinc-100 text-zinc-500 hover:border-blue-400 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400";
+      content = <span className="font-semibold">OFF</span>;
+    } else if (cell.startTime && cell.endTime) {
+      pillClass = isMorning
+        ? "border-amber-200 bg-amber-100 text-amber-800 hover:border-blue-400 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
+        : "border-pink-200 bg-pink-100 text-pink-700 hover:border-blue-400 dark:border-pink-900 dark:bg-pink-950 dark:text-pink-300";
+      content = (
+        <span className="font-semibold">
+          {cell.startTime}–{cell.endTime}
+        </span>
+      );
+    }
+
     return (
       <button
         onClick={() => setEditing(true)}
-        className={cn(
-          "min-h-11 w-full rounded-lg border px-2 py-1.5 text-left text-xs",
-          isAssigned
-            ? "border-zinc-200 hover:border-blue-400 dark:border-zinc-800"
-            : "border-dashed border-zinc-200 text-zinc-300 hover:border-blue-400 dark:border-zinc-800 dark:text-zinc-700"
-        )}
+        className={cn("min-h-11 w-full rounded-lg border px-2 py-1.5 text-center text-xs", pillClass)}
       >
-        {cell.isOffDay ? (
-          <span className="text-zinc-400 dark:text-zinc-500">Off</span>
-        ) : cell.startTime ? (
-          <span className="text-zinc-900 dark:text-zinc-50">
-            {cell.startTime}–{cell.endTime}
-          </span>
-        ) : (
-          <span>— set —</span>
-        )}
+        {content}
         {!cell.isOffDay && cell.startTime && !cell.isPublished && (
-          <span className="ml-1 text-amber-500" title="Not yet published">
+          <span className="ml-1 text-amber-600" title="Not yet published">
             •
           </span>
         )}

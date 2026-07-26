@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { RosterCellEditor } from "@/components/roster/RosterCellEditor";
 import { PublishWeekButton } from "@/components/roster/PublishWeekButton";
 import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Avatar } from "@/components/staff/Avatar";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -120,24 +121,29 @@ async function WeeklyRoster({
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, -7))}`}>
-          <Button variant="secondary" className="px-3 py-1.5 text-sm">
-            ← Prev
-          </Button>
-        </Link>
-        <span className="text-sm text-zinc-600 dark:text-zinc-300">
-          {formatDateKey(weekStart)} – {formatDateKey(weekDates[6])}
-        </span>
-        <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, 7))}`}>
-          <Button variant="secondary" className="px-3 py-1.5 text-sm">
-            Next →
-          </Button>
-        </Link>
-        <Badge tone={fullyPublished ? "success" : "warning"}>
-          {fullyPublished ? "Published" : "Not Published"}
-        </Badge>
-        <PublishWeekButton branchSlug={branchSlug} weekStart={weekStartKey} />
+      <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, -7))}`}>
+            <Button variant="secondary" className="flex items-center gap-1 px-3 py-1.5 text-sm">
+              <ChevronLeft className="h-4 w-4" /> Prev
+            </Button>
+          </Link>
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <CalendarDays className="h-4 w-4 text-brand-maroon" />
+            {formatDateKey(weekStart)} – {formatDateKey(weekDates[6])}
+          </span>
+          <Link href={`?view=weekly&week=${formatDateKey(addDays(weekStart, 7))}`}>
+            <Button variant="secondary" className="flex items-center gap-1 px-3 py-1.5 text-sm">
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <Badge tone={fullyPublished ? "success" : "warning"}>
+            {fullyPublished ? "Published" : "Not Published"}
+          </Badge>
+          <PublishWeekButton branchSlug={branchSlug} weekStart={weekStartKey} />
+        </div>
       </div>
 
       {roster.length === 0 ? (
@@ -165,8 +171,11 @@ async function WeeklyRoster({
             <tbody>
               {roster.map((row) => (
                 <tr key={row.staffId}>
-                  <td className="whitespace-nowrap p-2 font-medium text-zinc-900 dark:text-zinc-50">
-                    {row.staffName}
+                  <td className="whitespace-nowrap p-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar avatarEmoji={row.avatarEmoji} avatarImage={row.avatarImage} size={32} />
+                      <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.staffName}</span>
+                    </div>
                   </td>
                   {weekDates.map((d) => {
                     const key = formatDateKey(d);
@@ -186,6 +195,20 @@ async function WeeklyRoster({
               ))}
             </tbody>
           </table>
+          <div className="mt-3 flex flex-wrap items-center gap-4 px-1 text-xs text-zinc-600 dark:text-zinc-300">
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full border border-amber-300 bg-amber-100 dark:border-amber-800 dark:bg-amber-950" />
+              Morning
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full border border-pink-300 bg-pink-100 dark:border-pink-800 dark:bg-pink-950" />
+              Evening
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full border border-zinc-300 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800" />
+              Off
+            </span>
+          </div>
         </div>
       )}
     </div>
