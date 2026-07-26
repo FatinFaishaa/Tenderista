@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Calendar, ListTodo, BookOpen, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { PullToRefresh } from "@/components/layout/PullToRefresh";
 
 const NAV_ITEMS = [
   { label: "Utama", icon: Home, href: "" },
@@ -44,7 +45,9 @@ export function StaffShell({
           <LogOut className="h-4 w-4" />
         </button>
       </header>
-      <main className="mx-auto w-full max-w-md flex-1 px-4 py-4">{children}</main>
+      <main className="mx-auto w-full max-w-md flex-1 px-4 py-4">
+          <PullToRefresh>{children}</PullToRefresh>
+        </main>
       <nav className="sticky bottom-0 grid grid-cols-5 border-t border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-900">
         {NAV_ITEMS.map((item) => {
           const href = `/${branchSlug}${item.href ? `/${item.href}` : ""}`;
