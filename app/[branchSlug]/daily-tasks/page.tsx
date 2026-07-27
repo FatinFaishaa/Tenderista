@@ -3,7 +3,7 @@ import { Clock, CheckCircle2, ClipboardList } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getTodaysDailyTasks } from "@/lib/dailyTasks/queries";
-import { getMyJobPosition } from "@/lib/staff/queries";
+import { getMyDepartment } from "@/lib/staff/queries";
 import { DailyTaskCheckbox } from "@/components/dailyTasks/DailyTaskCheckbox";
 
 export default async function StaffDailyTasksPage({
@@ -16,7 +16,7 @@ export default async function StaffDailyTasksPage({
   if (!session.userId) redirect("/login");
   const branch = await resolveBranchForUser(branchSlug, session.userId);
   if (!branch) redirect("/branches");
-  const myStaffRecord = await getMyJobPosition(branch.id, session.userId);
+  const myStaffRecord = await getMyDepartment(branch.id, session.userId);
   const tasks = await getTodaysDailyTasks(
     branch.id,
     session.userId,

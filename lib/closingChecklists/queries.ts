@@ -47,7 +47,7 @@ export async function listClosingItemsGroupedByDepartment(
         .map((item) => ({
           id: item.id,
           title: item.title,
-          department: item.department,
+          department: item.department as (typeof CHECKLIST_DEPARTMENTS)[number],
           sortOrder: item.sortOrder,
         })),
     }));
@@ -65,7 +65,7 @@ export async function getClosingChecklistItemById(
     return {
       id: item.id,
       title: item.title,
-      department: item.department,
+      department: item.department as (typeof CHECKLIST_DEPARTMENTS)[number],
       sortOrder: item.sortOrder,
     };
   });
@@ -137,7 +137,7 @@ export async function getTodaysClosingChecklist(
           return {
             id: item.id,
             title: item.title,
-            department: item.department,
+            department: item.department as (typeof CHECKLIST_DEPARTMENTS)[number],
             sortOrder: item.sortOrder,
             isCompleted: Boolean(completion),
             completedByName: completion?.completer.name ?? null,

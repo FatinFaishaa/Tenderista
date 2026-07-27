@@ -749,9 +749,9 @@ model ChecklistInstanceItem {
 
 enum ChecklistDepartment {
   kitchen
-  cashier
-  dining
-  cleaning
+  front
+  front_kitchen
+  all
 
   @@map("checklist_department_enum")
 }
@@ -844,7 +844,7 @@ model DailyTask {
   branchId  String   @map("branch_id") @db.Uuid
   title      String   @db.VarChar(200)
   isPriority Boolean  @default(false) @map("is_priority")
-  assignedJobPosition String? @map("assigned_job_position") @db.VarChar(100)
+  department ChecklistDepartment @default(all) @map("department")
   sortOrder  Int      @default(0) @map("sort_order")
   createdBy String   @map("created_by") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)

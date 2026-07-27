@@ -33,7 +33,7 @@ export async function getMyDepartment(
       where: { branchId_userId: { branchId, userId } },
       select: { department: true },
     });
-    return staff?.department ?? null;
+    return (staff?.department as ChecklistDepartmentValue) ?? null;
   });
 }
 

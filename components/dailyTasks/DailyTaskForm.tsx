@@ -4,20 +4,24 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { FormError } from "@/components/ui/FormError";
+import { DAILY_TASK_DEPARTMENTS, DEPARTMENT_LABELS } from "@/lib/validation/checklist";
 
 type Props = {
   branchSlug: string;
   taskId?: string;
-  jobPositionOptions: string[];
-  initialValues?: { title: string; isPriority?: boolean; assignedJobPosition?: string | null };
+  initialValues?: {
+    title: string;
+    isPriority?: boolean;
+    department?: (typeof DAILY_TASK_DEPARTMENTS)[number];
+  };
 };
 
-export function DailyTaskForm({ branchSlug, taskId, jobPositionOptions, initialValues }: Props) {
+export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [isPriority, setIsPriority] = useState(initialValues?.isPriority ?? false);
-  const [assignedJobPosition, setAssignedJobPosition] = useState(
-    initialValues?.assignedJobPosition ?? ""
+  const [department, setDepartment] = useState<(typeof DAILY_TASK_DEPARTMENTS)[number]>(
+    initialValues?.department ?? "all"
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,7 +40,7 @@ export function DailyTaskForm({ branchSlug, taskId, jobPositionOptions, initialV
         body: JSON.stringify({
           title,
           isPriority,
-          assignedJobPosition: assignedJobPosition || null,
+          department,
         }),
       });
       const data = await res.json();
@@ -64,22 +68,21 @@ export function DailyTaskForm({ branchSlug, taskId, jobPositionOptions, initialV
         />
       </div>
       <div>
-        <Label htmlFor="assignedJobPosition">Assign to Job Position</Label>
+        <Label htmlFor="department">Assign to Department</Label>
         <select
-          id="assignedJobPosition"
-          value={assignedJobPosition}
-          onChange={(e) => setAssignedJobPosition(e.target.value)}
+          id="department"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value as (typeof DAILY_TASK_DEPARTMENTS)[number])}
           className="min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
-          <option value="">— Semua Staff —</option>
-          {jobPositionOptions.map((position) => (
-            <option key={position} value={position}>
-              {position}
+          {DAILY_TASK_DEPARTMENTS.map((dept) => (
+            <option key={dept} value={dept}>
+              {DEPARTMENT_LABELS[dept]}
             </option>
           ))}
         </select>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Pilih "Semua Staff" untuk tugasan yang dilihat oleh semua orang.
+          Pilih "All Staff" untuk tugasan yang dilihat oleh semua orang.
         </p>
       </div>
       <label className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">

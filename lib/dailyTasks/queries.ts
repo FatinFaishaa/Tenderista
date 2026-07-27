@@ -1,10 +1,11 @@
 import { withTenantContext } from "@/lib/db";
 import { getBranchLocalDate } from "@/lib/utils/branchDate";
+import type { DailyTaskDepartmentValue } from "@/lib/validation/checklist";
 
 // Daily Task V1 — mirrors lib/checklists/queries.ts's shape (flat item list + daily
-// completion) but deliberately not shared with it: assigned by branch only, no
-// department split, no recurrence rule. Every active branch member sees every active
-// task; there's no restrictToDepartment-style narrowing here.
+// completion) but deliberately not shared with it: assigned by branch only, narrowed
+// by department (with an "all" option that matches every staff member regardless of
+// their own department).
 
 export class DailyTaskNotFoundError extends Error {}
 
@@ -13,7 +14,7 @@ export type DailyTaskRow = {
   title: string;
   sortOrder: number;
   isPriority: boolean;
-  assignedJobPosition: string | null;
+  department: DailyTaskDepartmentValue;
 };
 
 /** For the Owner/Manager management page — every task, in sortOrder. */
@@ -23,7 +24,7 @@ export async function listDailyTasks(branchId: string, userId: string): Promise<
       where: { branchId },
       orderBy: { sortOrder: "asc" },
     });
-    return tasks.map((t) => ({ id: t.id, title: t.title, sortOrder: t.sortOrder, isPriority: t.isPriority, assignedJobPosition: t.assignedJobPosition }));
+    return tasks.map((t) => ({ id: t.id, title: t.title, sortOrder: t.sortOrder, isPriority: t.isPriority, department: t.department }));
   });
 }
 
@@ -35,7 +36,7 @@ export async function getDailyTaskById(
   return withTenantContext({ userId, branchId }, async (tx) => {
     const task = await tx.dailyTask.findFirst({ where: { id, branchId } });
     if (!task) return null;
-    return { id: task.id, title: task.title, sortOrder: task.sortOrder, isPriority: task.isPriority, assignedJobPosition: task.assignedJobPosition };
+    return { id: task.id, title: task.title, sortOrder: task.sortOrder, isPriority: task.isPriority, department: task.department };
   });
 }
 
@@ -47,17 +48,19 @@ export type TodaysDailyTask = DailyTaskRow & {
 
 /**
  * For the staff daily view and the Owner/Manager progress view — one query covers
- * both, since the only difference is who's looking, not what they see (no
- * department restriction in V1, unlike the Opening/Closing Checklist).
+ * both, since the only difference is who's looking, not what they see.
  *
  * `date` defaults to today (in the branch's own timezone) when omitted.
+ * `restrictToDepartment` narrows to tasks tagged "all" or matching the given
+ * department; omit it for Owner/Manager call sites (no restriction — they see
+ * every task).
  */
 export async function getTodaysDailyTasks(
   branchId: string,
   userId: string,
   timezone: string,
   date?: Date,
-  restrictToJobPosition?: string
+  restrictToDepartment?: DailyTaskDepartmentValue
 ): Promise<TodaysDailyTask[]> {
   const targetDate = date ?? getBranchLocalDate(timezone);
 
@@ -73,9 +76,9 @@ export async function getTodaysDailyTasks(
       },
     });
 
-    const filtered = restrictToJobPosition
+    const filtered = restrictToDepartment
       ? tasks.filter(
-          (t) => !t.assignedJobPosition || t.assignedJobPosition === restrictToJobPosition
+          (t) => t.department === "all" || t.department === restrictToDepartment
         )
       : tasks;
 
@@ -86,7 +89,7 @@ export async function getTodaysDailyTasks(
         title: task.title,
         sortOrder: task.sortOrder,
         isPriority: task.isPriority,
-        assignedJobPosition: task.assignedJobPosition,
+        department: task.department,
         isCompleted: Boolean(completion),
         completedByName: completion?.completer.name ?? null,
         completedAt: completion?.completedAt ?? null,
@@ -129,7 +132,7 @@ export async function toggleTodaysCompletion(
 export async function createDailyTask(
   branchId: string,
   userId: string,
-  input: { title: string; isPriority?: boolean; assignedJobPosition?: string | null }
+  input: { title: string; isPriority?: boolean; department?: DailyTaskDepartmentValue }
 ): Promise<{ id: string }> {
   return withTenantContext({ userId, branchId }, async (tx) => {
     const last = await tx.dailyTask.findFirst({
@@ -142,7 +145,7 @@ export async function createDailyTask(
         branchId,
         title: input.title,
         isPriority: input.isPriority ?? false,
-        assignedJobPosition: input.assignedJobPosition || null,
+        department: input.department ?? "all",
         sortOrder: (last?.sortOrder ?? -1) + 1,
         createdBy: userId,
       },
@@ -156,7 +159,7 @@ export async function updateDailyTask(
   branchId: string,
   userId: string,
   id: string,
-  input: { title: string; isPriority?: boolean; assignedJobPosition?: string | null }
+  input: { title: string; isPriority?: boolean; department?: DailyTaskDepartmentValue }
 ): Promise<void> {
   const result = await withTenantContext({ userId, branchId }, (tx) =>
     tx.dailyTask.updateMany({
@@ -164,7 +167,7 @@ export async function updateDailyTask(
       data: {
         title: input.title,
         isPriority: input.isPriority ?? false,
-        assignedJobPosition: input.assignedJobPosition || null,
+        department: input.department ?? "all",
       },
     })
   );

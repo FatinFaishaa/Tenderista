@@ -1,16 +1,20 @@
 import { z } from "zod";
 
-export const CHECKLIST_DEPARTMENTS = ["kitchen", "cashier", "dining", "cleaning"] as const;
+export const CHECKLIST_DEPARTMENTS = ["kitchen", "front", "front_kitchen"] as const;
 
 export type ChecklistDepartmentValue = (typeof CHECKLIST_DEPARTMENTS)[number];
 
+export const DAILY_TASK_DEPARTMENTS = ["all", "kitchen", "front", "front_kitchen"] as const;
+
+export type DailyTaskDepartmentValue = (typeof DAILY_TASK_DEPARTMENTS)[number];
+
 // Client-safe (no DB import) — used by both the server-side queries module and
 // client components like ChecklistItemForm, which must not pull in lib/db.ts.
-export const DEPARTMENT_LABELS: Record<(typeof CHECKLIST_DEPARTMENTS)[number], string> = {
+export const DEPARTMENT_LABELS: Record<DailyTaskDepartmentValue, string> = {
   kitchen: "Kitchen",
-  cashier: "Cashier",
-  dining: "Dining",
-  cleaning: "Cleaning",
+  front: "Front",
+  front_kitchen: "Front & Kitchen",
+  all: "All Staff",
 };
 
 export const checklistItemSchema = z.object({
