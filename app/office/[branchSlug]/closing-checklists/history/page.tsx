@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { DatePickerNav } from "@/components/ui/DatePickerNav";
 
 function formatTime(date: Date) {
-  return new Date(date).toLocaleTimeString("en-MY", { hour: "numeric", minute: "2-digit" });
+  return new Date(date).toLocaleTimeString("en-MY", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" });
 }
 
 export default async function ClosingChecklistHistoryPage({

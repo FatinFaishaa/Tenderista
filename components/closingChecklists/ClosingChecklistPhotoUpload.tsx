@@ -59,6 +59,7 @@ export function ClosingChecklistPhotoUpload({
           {new Date(existingSubmission.submittedAt).toLocaleTimeString("en-MY", {
             hour: "2-digit",
             minute: "2-digit",
+            timeZone: "Asia/Kuala_Lumpur",
           })}
         </p>
       </div>

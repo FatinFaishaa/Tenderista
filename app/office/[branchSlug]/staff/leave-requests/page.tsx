@@ -101,7 +101,7 @@ export default async function LeaveRequestsPage({
                 </p>
               )}
               <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-                Submitted {request.createdAt.toLocaleDateString("en-MY")}
+                Submitted {request.createdAt.toLocaleDateString("en-MY", { timeZone: "Asia/Kuala_Lumpur" })}
                 {request.reviewedByName &&
                   ` · Reviewed by ${request.reviewedByName}`}
               </p>
