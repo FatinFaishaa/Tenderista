@@ -1,6 +1,6 @@
 import { withTenantContext } from "@/lib/db";
 import { getBranchLocalDate } from "@/lib/utils/branchDate";
-import type { DailyTaskDepartmentValue } from "@/lib/validation/checklist";
+import { DAILY_TASK_DEPARTMENTS, type DailyTaskDepartmentValue } from "@/lib/validation/checklist";
 
 // Daily Task V1 — mirrors lib/checklists/queries.ts's shape (flat item list + daily
 // completion) but deliberately not shared with it: assigned by branch only, narrowed
@@ -128,6 +128,26 @@ export async function toggleTodaysCompletion(
   });
 }
 
+export type DailyTaskDepartmentGroup = {
+  department: DailyTaskDepartmentValue;
+  items: DailyTaskRow[];
+};
+
+/** Same rows as listDailyTasks, reshaped into one group per department (fixed
+ * order: all, kitchen, front, front_kitchen) — used by the Owner/Manager management
+ * page's folder view. Empty departments are still included (empty items array) so
+ * the folder always shows, with a 0 count, rather than disappearing. */
+export async function listDailyTasksGroupedByDepartment(
+  branchId: string,
+  userId: string
+): Promise<DailyTaskDepartmentGroup[]> {
+  const rows = await listDailyTasks(branchId, userId);
+  return DAILY_TASK_DEPARTMENTS.map((department) => ({
+    department,
+    items: rows.filter((r) => r.department === department),
+  }));
+}
+
 /** Owner/Manager only: creates a task, appended to the end of the branch's list. */
 export async function createDailyTask(
   branchId: string,
@@ -200,7 +220,7 @@ export async function moveDailyTask(
     if (!task) throw new DailyTaskNotFoundError("Task not found.");
 
     const siblings = await tx.dailyTask.findMany({
-      where: { branchId },
+      where: { branchId, department: task.department },
       orderBy: { sortOrder: "asc" },
     });
 
