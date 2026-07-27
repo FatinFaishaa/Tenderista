@@ -191,6 +191,47 @@ export type MyEarningsSummary =
   | { hasStaffRecord: true; salaryType: "monthly"; amount: number }
   | { hasStaffRecord: true; salaryType: "hourly"; amount: number; hourlyRate: number; workedHours: number };
 
+/** Owner/Manager-facing version of getMyMonthlyEarnings — same current-month
+ * estimate, but looked up by staffId directly rather than the caller's own userId,
+ * so the Owner can view any staff member's estimated cost for the month (e.g. on
+ * the Staff Details page, to help total up monthly payroll cost). */
+export async function getStaffMonthlyEarnings(
+  branchId: string,
+  actingUserId: string,
+  staffId: string,
+  timezone: string
+): Promise<MyEarningsSummary> {
+  const { start, end } = getBranchLocalMonthRange(timezone);
+
+  return withTenantContext({ userId: actingUserId, branchId }, async (tx) => {
+    const staff = await tx.staff.findFirst({ where: { id: staffId, branchId } });
+    if (!staff) return { hasStaffRecord: false };
+
+    if (staff.salaryType === "monthly") {
+      return {
+        hasStaffRecord: true,
+        salaryType: "monthly",
+        amount: staff.basicSalary ? Number(staff.basicSalary) : 0,
+      };
+    }
+
+    const agg = await tx.attendanceRecord.aggregate({
+      where: { staffId: staff.id, date: { gte: start, lt: end } },
+      _sum: { workedHours: true },
+    });
+    const workedHours = agg._sum.workedHours ? Number(agg._sum.workedHours) : 0;
+    const hourlyRate = staff.hourlyRate ? Number(staff.hourlyRate) : 0;
+
+    return {
+      hasStaffRecord: true,
+      salaryType: "hourly",
+      amount: workedHours * hourlyRate,
+      hourlyRate,
+      workedHours,
+    };
+  });
+}
+
 /** Rough current-month earnings estimate for the staff-facing dashboard.
  * Monthly-salary staff just see their basicSalary. Hourly staff see
  * sum(workedHours this month) x hourlyRate — overtime is excluded on purpose,

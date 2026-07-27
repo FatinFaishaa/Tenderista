@@ -4,16 +4,15 @@ import { ChevronLeft, Pencil } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getStaffById, getStaffPersonalInfo } from "@/lib/staff/queries";
+import { getStaffMonthlyEarnings } from "@/lib/attendance/queries";
 import { DEPARTMENT_LABELS } from "@/lib/validation/checklist";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StaffPersonalInfoCard } from "@/components/staff/StaffPersonalInfoCard";
-
 const SALARY_TYPE_LABELS: Record<string, string> = {
   monthly: "Full-time (Monthly)",
   hourly: "Part-time (Hourly)",
 };
-
 export default async function StaffDetailsPage({
   params,
 }: {
@@ -27,7 +26,7 @@ export default async function StaffDetailsPage({
   const staff = await getStaffById(branch.id, session.userId, id);
   if (!staff) notFound();
   const personalInfo = await getStaffPersonalInfo(branch.id, session.userId, id);
-
+  const earnings = await getStaffMonthlyEarnings(branch.id, session.userId, id, branch.timezone);
   const employmentRows = [
     { label: "Job Position", value: staff.jobPosition },
     {
@@ -49,7 +48,6 @@ export default async function StaffDetailsPage({
             : "—",
     },
   ];
-
   return (
     <div className="max-w-md space-y-6">
       <Link
@@ -58,7 +56,6 @@ export default async function StaffDetailsPage({
       >
         <ChevronLeft className="h-4 w-4" /> Kembali ke Staff
       </Link>
-
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
@@ -72,7 +69,6 @@ export default async function StaffDetailsPage({
           {staff.status === "active" ? "Active" : "Inactive"}
         </Badge>
       </div>
-
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
           <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Employment</p>
@@ -91,9 +87,32 @@ export default async function StaffDetailsPage({
           </div>
         ))}
       </div>
-
+      {earnings.hasStaffRecord && (
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
+            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+              Anggaran Gaji Bulan Ini
+            </p>
+          </div>
+          <div className="px-4 py-3">
+            <p className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+              RM{" "}
+              {earnings.amount.toLocaleString("en-MY", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </p>
+            {earnings.salaryType === "hourly" ? (
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                {earnings.workedHours.toFixed(1)} jam × RM {earnings.hourlyRate.toFixed(2)}/jam
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Gaji bulanan tetap</p>
+            )}
+          </div>
+        </div>
+      )}
       <StaffPersonalInfoCard personalInfo={personalInfo} />
-
       <Link href={`/office/${branchSlug}/staff/${staff.id}/edit`}>
         <Button className="flex w-full items-center justify-center gap-2">
           <Pencil className="h-4 w-4" /> Edit Staff
