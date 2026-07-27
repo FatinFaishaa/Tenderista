@@ -13,6 +13,10 @@ export type StockItemRow = {
   minAlertLevel: number;
   isActive: boolean;
   isLow: boolean;
+  createdAt: Date;
+  creatorName: string;
+  updatedAt: Date;
+  updatedByName: string | null;
 };
 
 function toRow(item: {
@@ -23,6 +27,10 @@ function toRow(item: {
   currentQuantity: unknown;
   minAlertLevel: unknown;
   isActive: boolean;
+  createdAt: Date;
+  creator: { name: string };
+  updatedAt: Date;
+  updater: { name: string } | null;
 }): StockItemRow {
   const currentQuantity = Number(item.currentQuantity);
   const minAlertLevel = Number(item.minAlertLevel);
@@ -36,6 +44,10 @@ function toRow(item: {
     isActive: item.isActive,
     // Computed at read time, not stored — mirrors checklist_instances' "overdue".
     isLow: currentQuantity <= minAlertLevel,
+    createdAt: item.createdAt,
+    creatorName: item.creator.name,
+    updatedAt: item.updatedAt,
+    updatedByName: item.updater?.name ?? null,
   };
 }
 
@@ -45,6 +57,7 @@ export async function listStockItems(branchId: string, userId: string): Promise<
     const items = await tx.stockItem.findMany({
       where: { branchId },
       orderBy: { name: "asc" },
+      include: { creator: { select: { name: true } }, updater: { select: { name: true } } },
     });
     return items.map(toRow);
   });
@@ -59,6 +72,7 @@ export async function listActiveStockItems(
     const items = await tx.stockItem.findMany({
       where: { branchId, isActive: true },
       orderBy: { name: "asc" },
+      include: { creator: { select: { name: true } }, updater: { select: { name: true } } },
     });
     return items.map(toRow);
   });
@@ -97,7 +111,10 @@ export async function getStockItemById(
   id: string
 ): Promise<StockItemRow | null> {
   return withTenantContext({ userId, branchId }, async (tx) => {
-    const item = await tx.stockItem.findFirst({ where: { id, branchId } });
+    const item = await tx.stockItem.findFirst({
+      where: { id, branchId },
+      include: { creator: { select: { name: true } }, updater: { select: { name: true } } },
+    });
     return item ? toRow(item) : null;
   });
 }

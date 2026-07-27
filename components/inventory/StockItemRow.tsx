@@ -10,6 +10,16 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import type { StockItemRow as StockItemData } from "@/lib/inventory/queries";
 
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("en-MY", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
+
 // Owner-only row: item details (Edit) and the on-hand count (Adjust Qty) are
 // deliberately separate actions hitting separate endpoints — Edit never touches
 // currentQuantity, Adjust Qty never touches name/unit/minAlertLevel. Same quantity
@@ -88,6 +98,11 @@ export function StockItemRow({
             {item.currentQuantity}
             {item.unit ? ` ${item.unit}` : ""} on hand · alert below {item.minAlertLevel}
             {item.unit ? ` ${item.unit}` : ""}
+          </p>
+          <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+            {item.updatedByName
+              ? `Terakhir dikemaskini: ${formatDateTime(item.updatedAt)} oleh ${item.updatedByName}`
+              : `Dicipta: ${formatDateTime(item.createdAt)} oleh ${item.creatorName}`}
           </p>
         </div>
       </div>
