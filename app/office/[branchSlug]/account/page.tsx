@@ -62,15 +62,23 @@ export default async function OwnerAccountPage({
           <Link
             key={item.href}
             href={`/office/${branchSlug}/${item.href}`}
-            className={`flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:text-zinc-50 dark:hover:bg-zinc-800 ${
-              i !== MENU_ITEMS.length - 1 ? "border-b border-zinc-100 dark:border-zinc-800" : ""
-            }`}
+            className={`flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:text-zinc-50 dark:hover:bg-zinc-800 border-b border-zinc-100 dark:border-zinc-800`}
           >
             <span className="text-lg">{item.icon}</span>
             {item.label}
             <span className="ml-auto text-zinc-300 dark:text-zinc-600">›</span>
           </Link>
         ))}
+        {branch.isPrimaryOwner && (
+          <Link
+            href={`/office/${branchSlug}/branch-partners`}
+            className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:text-zinc-50 dark:hover:bg-zinc-800"
+          >
+            <span className="text-lg">🤝</span>
+            Partner Cawangan
+            <span className="ml-auto text-zinc-300 dark:text-zinc-600">›</span>
+          </Link>
+        )}
       </div>
 
       <LogoutButton />

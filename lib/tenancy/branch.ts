@@ -6,6 +6,13 @@ export type AccessibleBranch = {
   slug: string;
   timezone: string;
   role: "owner" | "manager" | "staff";
+  /** True only for the original/primary Owner of this branch (isPrimaryOwner on their
+   * BranchOwner row). A "Partner Cawangan" (a second BranchOwner row added later) gets
+   * role: "owner" too — same full access within this one branch — but isPrimaryOwner is
+   * false for them, so features that should stay primary-owner-only (adding/removing
+   * other partners) can gate on this instead of just role === "owner". Undefined for
+   * manager/staff, who never have a BranchOwner row at all. */
+  isPrimaryOwner?: boolean;
 };
 
 // Fixed display order for the branch selector (switcher + chooser page). Any branch
@@ -53,6 +60,7 @@ export async function getAccessibleBranches(userId: string): Promise<AccessibleB
       slug: row.branch.slug,
       timezone: row.branch.timezone,
       role: "owner",
+      isPrimaryOwner: row.isPrimaryOwner,
     }));
 
     const staffed: AccessibleBranch[] = staffRows.map((row) => ({
