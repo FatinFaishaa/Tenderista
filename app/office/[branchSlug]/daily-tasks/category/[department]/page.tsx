@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
-import { listDailyTasksGroupedByDepartment } from "@/lib/dailyTasks/queries";
+import { getTodaysDailyTasks } from "@/lib/dailyTasks/queries";
 import {
   DAILY_TASK_DEPARTMENTS,
   DEPARTMENT_LABELS,
@@ -11,7 +11,15 @@ import {
 } from "@/lib/validation/checklist";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { DailyTaskRowControls } from "@/components/dailyTasks/DailyTaskRowControls";
+
+function formatTime(date: Date) {
+  return new Intl.DateTimeFormat("en-MY", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
 
 export default async function DailyTasksCategoryPage({
   params,
@@ -27,8 +35,8 @@ export default async function DailyTasksCategoryPage({
   if (!DAILY_TASK_DEPARTMENTS.includes(department as DailyTaskDepartmentValue)) notFound();
   const departmentValue = department as DailyTaskDepartmentValue;
 
-  const groups = await listDailyTasksGroupedByDepartment(branch.id, session.userId);
-  const tasks = groups.find((g) => g.department === departmentValue)?.items ?? [];
+  const allTasks = await getTodaysDailyTasks(branch.id, session.userId, branch.timezone);
+  const tasks = allTasks.filter((t) => t.department === departmentValue);
 
   return (
     <div>
@@ -54,7 +62,20 @@ export default async function DailyTasksCategoryPage({
         <div className="space-y-2">
           {tasks.map((task, index) => (
             <Card key={task.id} className="flex items-center justify-between gap-4">
-              <span className="text-zinc-900 dark:text-zinc-50">{task.title}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-zinc-900 dark:text-zinc-50">{task.title}</p>
+                {task.isCompleted ? (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Selesai oleh {task.completedByName}
+                    {task.completedAt ? ` · ${formatTime(task.completedAt)}` : ""}
+                  </p>
+                ) : (
+                  <Badge tone="neutral" className="mt-1">
+                    Belum selesai
+                  </Badge>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <Link href={`/office/${branchSlug}/daily-tasks/${task.id}/edit`}>
                   <Button variant="secondary" className="px-3 py-1.5 text-sm">
