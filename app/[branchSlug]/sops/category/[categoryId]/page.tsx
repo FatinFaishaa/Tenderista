@@ -10,6 +10,7 @@ function formatDate(date: Date) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "Asia/Kuala_Lumpur",
   }).format(new Date(date));
 }
 

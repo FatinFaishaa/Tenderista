@@ -18,6 +18,7 @@ function formatTime(date: Date) {
   return new Intl.DateTimeFormat("en-MY", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Kuala_Lumpur",
   }).format(new Date(date));
 }
 
