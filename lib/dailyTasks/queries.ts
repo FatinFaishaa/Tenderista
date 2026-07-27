@@ -8,6 +8,7 @@ import { DAILY_TASK_DEPARTMENTS, type DailyTaskDepartmentValue } from "@/lib/val
 // their own department).
 
 export class DailyTaskNotFoundError extends Error {}
+export class DailyTaskCompletionLockedError extends Error {}
 
 export type DailyTaskRow = {
   id: string;
@@ -100,11 +101,19 @@ export async function getTodaysDailyTasks(
 
 /** Toggles today's completion for a task — auto-save, no separate submit step. Any
  * branch member (Owner, Manager, or Staff) may toggle any task; no restriction. */
+/**
+ * Once a task is ticked, only the staff member who ticked it — or an Owner/Manager
+ * — may untick it (deliberately: a staff member shouldn't be able to erase another
+ * staff member's completion, e.g. someone else unticking that the stove was turned
+ * off after it was already confirmed done). Ticking an unticked task has no such
+ * restriction — any branch member may tick any task.
+ */
 export async function toggleTodaysCompletion(
   branchId: string,
   userId: string,
   taskId: string,
-  timezone: string
+  timezone: string,
+  actingRole: "owner" | "manager" | "staff"
 ): Promise<{ isCompleted: boolean }> {
   const today = getBranchLocalDate(timezone);
 
@@ -114,9 +123,17 @@ export async function toggleTodaysCompletion(
 
     const existing = await tx.dailyTaskCompletion.findUnique({
       where: { taskId_date: { taskId, date: today } },
+      include: { completer: { select: { name: true } } },
     });
 
     if (existing) {
+      const isOwnCompletion = existing.completedBy === userId;
+      const canOverride = actingRole === "owner" || actingRole === "manager";
+      if (!isOwnCompletion && !canOverride) {
+        throw new DailyTaskCompletionLockedError(
+          `Hanya ${existing.completer.name} atau Owner/Manager boleh nyahtanda tugasan ini.`
+        );
+      }
       await tx.dailyTaskCompletion.delete({ where: { id: existing.id } });
       return { isCompleted: false };
     }
