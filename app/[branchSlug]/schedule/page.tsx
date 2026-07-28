@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getDailyRosterWithProfile, getLateCountToday, getPublishedRosterForWeek } from "@/lib/roster/queries";
 import { getMyTodaysAttendance } from "@/lib/attendance/queries";
-import { getClosingDutyForWeek } from "@/lib/roster/closingDuty";
+import { getClosingDutyForWeek, CLOSING_DUTY_WEEKDAY_INDICES } from "@/lib/roster/closingDuty";
 import { getBranchLocalDateString, getBranchLocalDate } from "@/lib/utils/branchDate";
 import { getWeekStart, getWeekDates, addDays, formatDateKey, parseDateKey } from "@/lib/utils/week";
 import { Button } from "@/components/ui/Button";
@@ -301,8 +301,11 @@ async function WeeklyPreviewForStaff({
                   <td className="whitespace-nowrap p-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                     🧹 Cuci Tandas
                   </td>
-                  {weekDates.map((d) => {
+                  {weekDates.map((d, i) => {
                     const key = formatDateKey(d);
+                    if (!CLOSING_DUTY_WEEKDAY_INDICES.includes(i)) {
+                      return <td key={key} className="p-1 align-top" />;
+                    }
                     const dutyStaffId = closingDuty[key];
                     const dutyName = dutyStaffId ? staffNameById.get(dutyStaffId) : null;
                     return (

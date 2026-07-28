@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getRosterForWeek, getDailyRosterWithProfile, getLateCountToday } from "@/lib/roster/queries";
-import { getClosingDutyForWeek, getEligibleClosingStaff } from "@/lib/roster/closingDuty";
+import { getClosingDutyForWeek, getEligibleClosingStaff, CLOSING_DUTY_WEEKDAY_INDICES } from "@/lib/roster/closingDuty";
 import { ClosingDutyCell } from "@/components/roster/ClosingDutyCell";
 import { listShifts } from "@/lib/shifts/queries";
 import { getBranchLocalDate, getBranchLocalDateString } from "@/lib/utils/branchDate";
@@ -377,8 +377,11 @@ async function PreviewRoster({
                 <td className="whitespace-nowrap p-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                   🧹 Cuci Tandas
                 </td>
-                {weekDates.map((d) => {
+                {weekDates.map((d, i) => {
                   const key = formatDateKey(d);
+                  if (!CLOSING_DUTY_WEEKDAY_INDICES.includes(i)) {
+                    return <td key={key} className="p-1 align-top" />;
+                  }
                   const eligible = getEligibleClosingStaff(roster, key);
                   const options = eligible.map((staffId) => ({
                     staffId,

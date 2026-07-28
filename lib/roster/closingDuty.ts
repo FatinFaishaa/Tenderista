@@ -4,6 +4,10 @@ import { formatDateKey } from "@/lib/utils/week";
 
 export type ClosingDutyMap = Record<string, string | null>;
 
+/** weekDates is Mon-Sun (index 0-6) — Cuci Tandas only happens Monday, Wednesday,
+ * and Friday, per the Owner's request. Other days never show a duty assignment. */
+export const CLOSING_DUTY_WEEKDAY_INDICES = [0, 2, 4];
+
 /** Every active staff member, sorted by staffId for a stable rotation order.
  * Deliberately NOT filtered to who's actually scheduled to close that day — the
  * roster isn't always filled in ahead of time, and filtering by it meant some days
@@ -37,20 +41,24 @@ export async function getClosingDutyForWeek(
   const overrideByDate = new Map(overrides.map((o) => [formatDateKey(o.date), o.staffId]));
 
   const result: ClosingDutyMap = {};
-  for (const d of weekDates) {
+  weekDates.forEach((d, i) => {
     const key = formatDateKey(d);
+    if (!CLOSING_DUTY_WEEKDAY_INDICES.includes(i)) {
+      result[key] = null;
+      return;
+    }
     if (overrideByDate.has(key)) {
       result[key] = overrideByDate.get(key)!;
-      continue;
+      return;
     }
     const eligible = getEligibleClosingStaff(roster, key);
     if (eligible.length === 0) {
       result[key] = null;
-      continue;
+      return;
     }
     const dayIndex = Math.floor(d.getTime() / 86_400_000);
     result[key] = eligible[dayIndex % eligible.length];
-  }
+  });
   return result;
 }
 
