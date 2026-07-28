@@ -4,18 +4,14 @@ import { formatDateKey } from "@/lib/utils/week";
 
 export type ClosingDutyMap = Record<string, string | null>;
 
-/** Staff working an evening/closing shift (start hour >= 12) on the given date,
- * sorted by staffId for a stable rotation order. */
-export function getEligibleClosingStaff(roster: RosterStaffRow[], dateKey: string): string[] {
-  return roster
-    .filter((row) => {
-      const cell = row.days[dateKey];
-      if (!cell || cell.isOffDay || !cell.startTime) return false;
-      const startHour = Number(cell.startTime.split(":")[0]);
-      return startHour >= 12;
-    })
-    .map((row) => row.staffId)
-    .sort();
+/** Every active staff member, sorted by staffId for a stable rotation order.
+ * Deliberately NOT filtered to who's actually scheduled to close that day — the
+ * roster isn't always filled in ahead of time, and filtering by it meant some days
+ * showed no name at all (and only staff who happened to have an evening shift ever
+ * appeared as an option). Rotating through everyone means every day always has
+ * someone, and the Owner can freely override to whoever they actually want. */
+export function getEligibleClosingStaff(roster: RosterStaffRow[], _dateKey: string): string[] {
+  return roster.map((row) => row.staffId).sort();
 }
 
 /** For each day in the week, picks who's on closing/toilet-cleaning duty: the Owner's
