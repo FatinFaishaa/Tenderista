@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getDailyRosterWithProfile, getLateCountToday, getPublishedRosterForWeek } from "@/lib/roster/queries";
 import { getMyTodaysAttendance } from "@/lib/attendance/queries";
+import { getClosingDutyForWeek } from "@/lib/roster/closingDuty";
 import { getBranchLocalDateString, getBranchLocalDate } from "@/lib/utils/branchDate";
 import { getWeekStart, getWeekDates, addDays, formatDateKey, parseDateKey } from "@/lib/utils/week";
 import { Button } from "@/components/ui/Button";
@@ -186,6 +187,8 @@ async function WeeklyPreviewForStaff({
   const weekDates = getWeekDates(weekStart);
 
   const roster = await getPublishedRosterForWeek(branchId, userId, weekStart);
+  const closingDuty = await getClosingDutyForWeek(branchId, userId, weekDates, roster);
+  const staffNameById = new Map(roster.map((r) => [r.staffId, r.staffName.split(" ")[0]]));
 
   const prevHref = `?view=preview&week=${weekOffset - 1}`;
   const nextHref = `?view=preview&week=${weekOffset + 1}`;
@@ -293,6 +296,29 @@ async function WeeklyPreviewForStaff({
                   );
                 })}
               </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-zinc-200 dark:border-zinc-700">
+                  <td className="whitespace-nowrap p-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                    🧹 Cuci Tandas
+                  </td>
+                  {weekDates.map((d) => {
+                    const key = formatDateKey(d);
+                    const dutyStaffId = closingDuty[key];
+                    const dutyName = dutyStaffId ? staffNameById.get(dutyStaffId) : null;
+                    return (
+                      <td key={key} className="p-1 text-center align-top">
+                        {dutyName ? (
+                          <span className="block rounded-lg border border-zinc-200 bg-zinc-50 px-1 py-1.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                            🧹 {dutyName}
+                          </span>
+                        ) : (
+                          <span className="block text-xs text-zinc-300 dark:text-zinc-700">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

@@ -304,6 +304,7 @@ model Branch {
   dailyExpenses               DailyExpense[]
   dailyClosings               DailyClosing[]
   closingChecklistSubmissions ClosingChecklistSubmission[]
+  closingDutyOverrides        ClosingDutyOverride[]
 
   @@map("branches")
 }
@@ -421,6 +422,7 @@ model User {
   dailyClosingsClosed               DailyClosing[]               @relation("DailyClosingClosedBy")
   dailyClosingsReopened             DailyClosing[]               @relation("DailyClosingReopenedBy")
   closingChecklistSubmissions       ClosingChecklistSubmission[]
+  closingDutyOverridesAssigned      ClosingDutyOverride[]
 
   @@map("users")
 }
@@ -472,6 +474,7 @@ model Staff {
   announcementReads     AnnouncementRead[]
   targetedAnnouncements Announcement[]
   payrollRecords        PayrollRecord[]
+  closingDutyOverrides  ClosingDutyOverride[]
 
   @@unique([branchId, userId])
   @@index([branchId, status])
@@ -562,6 +565,26 @@ model Schedule {
   @@unique([staffId, date])
   @@index([branchId, date])
   @@map("schedules")
+}
+
+/** Owner's manual override of who's on closing/toilet-cleaning duty for a specific
+ * date at a branch. When no row exists for a date, the app computes an automatic
+ * rotation among that day's closing-shift staff instead (see lib/roster/closingDuty.ts) —
+ * this table only stores the cases where the Owner explicitly picked someone. */
+model ClosingDutyOverride {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId   String   @map("branch_id") @db.Uuid
+  date       DateTime @db.Date
+  staffId    String   @map("staff_id") @db.Uuid
+  assignedBy String   @map("assigned_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff    Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  assigner User   @relation(fields: [assignedBy], references: [id])
+
+  @@unique([branchId, date])
+  @@map("closing_duty_overrides")
 }
 
 model AttendanceRecord {

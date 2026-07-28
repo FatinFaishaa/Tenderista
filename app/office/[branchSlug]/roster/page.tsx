@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getRosterForWeek, getDailyRosterWithProfile, getLateCountToday } from "@/lib/roster/queries";
+import { getClosingDutyForWeek, getEligibleClosingStaff } from "@/lib/roster/closingDuty";
+import { ClosingDutyCell } from "@/components/roster/ClosingDutyCell";
 import { listShifts } from "@/lib/shifts/queries";
 import { getBranchLocalDate, getBranchLocalDateString } from "@/lib/utils/branchDate";
 import { getWeekStart, getWeekDates, addDays, formatDateKey, parseDateKey } from "@/lib/utils/week";
@@ -93,7 +95,7 @@ export default async function RosterPage({
       {view === "weekly" ? (
         <WeeklyRoster branchSlug={branchSlug} userId={session.userId} branch={branch} week={week} />
       ) : view === "preview" ? (
-        <PreviewRoster userId={session.userId} branch={branch} week={week} />
+        <PreviewRoster branchSlug={branchSlug} userId={session.userId} branch={branch} week={week} />
       ) : (
         <DailyRoster userId={session.userId} branch={branch} date={date} />
       )}
@@ -279,10 +281,12 @@ async function DailyRoster({
  * table is fine for pure viewing; the click-target problems that forced Weekly Roster
  * onto per-staff cards don't apply here because nothing in this view is interactive. */
 async function PreviewRoster({
+  branchSlug,
   userId,
   branch,
   week,
 }: {
+  branchSlug: string;
   userId: string;
   branch: { id: string; timezone: string };
   week?: string;
@@ -291,6 +295,8 @@ async function PreviewRoster({
   const weekDates = getWeekDates(weekStart);
 
   const roster = await getRosterForWeek(branch.id, userId, weekStart);
+  const closingDuty = await getClosingDutyForWeek(branch.id, userId, weekDates, roster);
+  const staffNameById = new Map(roster.map((r) => [r.staffId, r.staffName.split(" ")[0]]));
 
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -366,6 +372,31 @@ async function PreviewRoster({
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-zinc-200 dark:border-zinc-700">
+                <td className="whitespace-nowrap p-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                  🧹 Cuci Tandas
+                </td>
+                {weekDates.map((d) => {
+                  const key = formatDateKey(d);
+                  const eligible = getEligibleClosingStaff(roster, key);
+                  const options = eligible.map((staffId) => ({
+                    staffId,
+                    firstName: staffNameById.get(staffId) ?? "?",
+                  }));
+                  return (
+                    <td key={key} className="p-1 align-top">
+                      <ClosingDutyCell
+                        branchSlug={branchSlug}
+                        dateKey={key}
+                        currentStaffId={closingDuty[key] ?? null}
+                        options={options}
+                      />
+                    </td>
+                  );
+                })}
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}
