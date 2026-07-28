@@ -53,7 +53,7 @@ export default function LoginPage() {
             height={120}
             className="drop-shadow-sm"
           />
-          <span className="text-xs font-semibold tracking-widest text-zinc-400">2022</span>
+          <span className="text-xs font-semibold tracking-widest text-zinc-400">2025</span>
         </div>
         <h1 className="font-display -mt-2 text-5xl text-brand-maroon">Tenderista</h1>
         <p className="mt-1 text-xs font-semibold tracking-[0.3em] text-zinc-500">
