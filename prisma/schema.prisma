@@ -300,6 +300,7 @@ model Branch {
   auditLogs                   AuditLog[]
   staffDocuments              StaffDocument[]
   stockItems                  StockItem[]
+  stockCategories             StockCategory[]
   dailyFinancialRecords       DailyFinancialRecord[]
   dailyExpenses               DailyExpense[]
   dailyClosings               DailyClosing[]
@@ -1010,15 +1011,23 @@ model AnnouncementRead {
 // computes "overdue" rather than storing it. A future movement ledger can be added
 // additively without changing this table's shape.
 
-enum StockCategory {
-  kitchen
-  barista
-  cashier
-  kedai
-  sauce_korean
-  sauce_honey_garlic
+/** Owner-managed, per-branch — replaces the old fixed StockCategory enum so the
+ * Owner can add and rename folders themselves instead of needing a code change each
+ * time. sortOrder controls display order in the folder picker; new categories are
+ * appended to the end by default. */
+model StockCategory {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  name      String   @db.VarChar(150)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("stock_category_enum")
+  branch     Branch      @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  stockItems StockItem[]
+
+  @@unique([branchId, name])
+  @@map("stock_categories")
 }
 
 model StockItem {
@@ -1026,7 +1035,7 @@ model StockItem {
   branchId        String   @map("branch_id") @db.Uuid
   name            String   @db.VarChar(150)
   unit            String?  @db.VarChar(20)
-  category        StockCategory @default(kedai)
+  categoryId      String        @map("category_id") @db.Uuid
   currentQuantity Decimal  @default(0) @map("current_quantity") @db.Decimal(10, 2)
   minAlertLevel   Decimal  @default(0) @map("min_alert_level") @db.Decimal(10, 2)
   isActive        Boolean  @default(true) @map("is_active")
@@ -1035,9 +1044,10 @@ model StockItem {
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  branch  Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  creator User   @relation("StockItemCreatedBy", fields: [createdBy], references: [id])
-  updater User?  @relation("StockItemUpdatedBy", fields: [updatedBy], references: [id])
+  branch   Branch         @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  category StockCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  creator  User           @relation("StockItemCreatedBy", fields: [createdBy], references: [id])
+  updater  User?          @relation("StockItemUpdatedBy", fields: [updatedBy], references: [id])
 
   @@unique([branchId, name])
   @@index([branchId, isActive])

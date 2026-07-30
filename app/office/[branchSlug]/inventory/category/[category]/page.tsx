@@ -4,11 +4,6 @@ import { ChevronLeft } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { listStockItemsGroupedByCategory } from "@/lib/inventory/queries";
-import {
-  STOCK_CATEGORIES,
-  STOCK_CATEGORY_LABELS,
-  type StockCategoryValue,
-} from "@/lib/validation/stock";
 import { StockItemRow } from "@/components/inventory/StockItemRow";
 
 export default async function InventoryCategoryPage({
@@ -16,18 +11,16 @@ export default async function InventoryCategoryPage({
 }: {
   params: Promise<{ branchSlug: string; category: string }>;
 }) {
-  const { branchSlug, category } = await params;
+  const { branchSlug, category: categoryId } = await params;
   const session = await getSession();
   if (!session.userId) redirect("/login");
   const branch = await resolveBranchForUser(branchSlug, session.userId);
   if (!branch) redirect("/branches");
   if (branch.role !== "owner") redirect(`/office/${branchSlug}/dashboard`);
 
-  if (!STOCK_CATEGORIES.includes(category as StockCategoryValue)) notFound();
-  const categoryValue = category as StockCategoryValue;
-
   const groups = await listStockItemsGroupedByCategory(branch.id, session.userId, false);
-  const items = groups.find((g) => g.category === categoryValue)?.items ?? [];
+  const group = groups.find((g) => g.categoryId === categoryId);
+  if (!group) notFound();
 
   return (
     <div>
@@ -39,16 +32,16 @@ export default async function InventoryCategoryPage({
       </Link>
 
       <h1 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-        {STOCK_CATEGORY_LABELS[categoryValue]}
+        {group.categoryName}
       </h1>
 
-      {items.length === 0 ? (
+      {group.items.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           No stock items yet in this category.
         </p>
       ) : (
         <div className="space-y-2">
-          {items.map((item) => (
+          {group.items.map((item) => (
             <StockItemRow key={item.id} branchSlug={branchSlug} item={item} />
           ))}
         </div>

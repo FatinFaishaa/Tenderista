@@ -4,25 +4,25 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { FormError } from "@/components/ui/FormError";
-import { STOCK_CATEGORIES, STOCK_CATEGORY_LABELS, type StockCategoryValue } from "@/lib/validation/stock";
 
 type Props = {
   branchSlug: string;
   itemId?: string;
+  categories: { id: string; name: string }[];
   initialValues?: {
     name: string;
     unit: string | null;
-    category: StockCategoryValue;
+    categoryId: string;
     minAlertLevel: number;
   };
 };
 
-export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
+export function StockItemForm({ branchSlug, itemId, categories, initialValues }: Props) {
   const router = useRouter();
   const [name, setName] = useState(initialValues?.name ?? "");
   const [unit, setUnit] = useState(initialValues?.unit ?? "");
-  const [category, setCategory] = useState<StockCategoryValue>(
-    initialValues?.category ?? "kedai"
+  const [categoryId, setCategoryId] = useState(
+    initialValues?.categoryId ?? categories[0]?.id ?? ""
   );
   const [minAlertLevel, setMinAlertLevel] = useState(
     initialValues ? String(initialValues.minAlertLevel) : "0"
@@ -47,8 +47,8 @@ export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           isEditing
-            ? { name, unit, category, minAlertLevel }
-            : { name, unit, category, minAlertLevel, currentQuantity }
+            ? { name, unit, categoryId, minAlertLevel }
+            : { name, unit, categoryId, minAlertLevel, currentQuantity }
         ),
       });
       const data = await res.json();
@@ -80,13 +80,13 @@ export function StockItemForm({ branchSlug, itemId, initialValues }: Props) {
         <Label htmlFor="category">Category</Label>
         <select
           id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value as StockCategoryValue)}
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
           className="min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
-          {STOCK_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {STOCK_CATEGORY_LABELS[cat]}
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
             </option>
           ))}
         </select>

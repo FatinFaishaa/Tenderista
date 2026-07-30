@@ -1,5 +1,4 @@
 import { withTenantContext } from "@/lib/db";
-import type { StockCategoryValue } from "@/lib/validation/stock";
 
 export class StockItemNotFoundError extends Error {}
 export class StockItemNameConflictError extends Error {}
@@ -8,7 +7,8 @@ export type StockItemRow = {
   id: string;
   name: string;
   unit: string | null;
-  category: StockCategoryValue;
+  categoryId: string;
+  categoryName: string;
   currentQuantity: number;
   minAlertLevel: number;
   isActive: boolean;
@@ -23,7 +23,8 @@ function toRow(item: {
   id: string;
   name: string;
   unit: string | null;
-  category: string;
+  categoryId: string;
+  category: { name: string };
   currentQuantity: unknown;
   minAlertLevel: unknown;
   isActive: boolean;
@@ -38,7 +39,8 @@ function toRow(item: {
     id: item.id,
     name: item.name,
     unit: item.unit,
-    category: item.category as StockCategoryValue,
+    categoryId: item.categoryId,
+    categoryName: item.category.name,
     currentQuantity,
     minAlertLevel,
     isActive: item.isActive,
@@ -51,13 +53,19 @@ function toRow(item: {
   };
 }
 
+const ITEM_INCLUDE = {
+  category: { select: { name: true } },
+  creator: { select: { name: true } },
+  updater: { select: { name: true } },
+} as const;
+
 /** Owner management view — every item, active and inactive alike. */
 export async function listStockItems(branchId: string, userId: string): Promise<StockItemRow[]> {
   return withTenantContext({ userId, branchId }, async (tx) => {
     const items = await tx.stockItem.findMany({
       where: { branchId },
       orderBy: { name: "asc" },
-      include: { creator: { select: { name: true } }, updater: { select: { name: true } } },
+      include: ITEM_INCLUDE,
     });
     return items.map(toRow);
   });
@@ -72,43 +80,40 @@ export async function listActiveStockItems(
     const items = await tx.stockItem.findMany({
       where: { branchId, isActive: true },
       orderBy: { name: "asc" },
-      include: { creator: { select: { name: true } }, updater: { select: { name: true } } },
+      include: ITEM_INCLUDE,
     });
     return items.map(toRow);
   });
 }
 
 export type StockCategoryGroup = {
-  category: StockCategoryValue;
+  categoryId: string;
+  categoryName: string;
   items: StockItemRow[];
 };
 
 /** Same rows as listStockItems/listActiveStockItems, reshaped into one group per
- * category (fixed order: kitchen, barista, cashier, kedai) — used by both the
- * Owner management page and the staff-facing update page, so category sections
- * appear in a consistent order regardless of who's looking. Empty categories are
- * still included (with an empty items array) so the UI can show "no items yet"
- * per category rather than silently omitting it. */
+ * category (in the branch's own display order) — used by both the Owner management
+ * page and the staff-facing update page, so category sections appear in a
+ * consistent order regardless of who's looking. Empty categories are still
+ * included (with an empty items array) so the UI can show "no items yet" per
+ * category rather than silently omitting it. */
 export async function listStockItemsGroupedByCategory(
   branchId: string,
   userId: string,
   activeOnly: boolean
 ): Promise<StockCategoryGroup[]> {
-  const rows = activeOnly
-    ? await listActiveStockItems(branchId, userId)
-    : await listStockItems(branchId, userId);
+  const [rows, categories] = await Promise.all([
+    activeOnly ? listActiveStockItems(branchId, userId) : listStockItems(branchId, userId),
+    withTenantContext({ userId, branchId }, (tx) =>
+      tx.stockCategory.findMany({ where: { branchId }, orderBy: { sortOrder: "asc" } })
+    ),
+  ]);
 
-  const order: StockCategoryValue[] = [
-    "kitchen",
-    "barista",
-    "cashier",
-    "kedai",
-    "sauce_korean",
-    "sauce_honey_garlic",
-  ];
-  return order.map((category) => ({
-    category,
-    items: rows.filter((r) => r.category === category),
+  return categories.map((category) => ({
+    categoryId: category.id,
+    categoryName: category.name,
+    items: rows.filter((r) => r.categoryId === category.id),
   }));
 }
 
@@ -118,10 +123,7 @@ export async function getStockItemById(
   id: string
 ): Promise<StockItemRow | null> {
   return withTenantContext({ userId, branchId }, async (tx) => {
-    const item = await tx.stockItem.findFirst({
-      where: { id, branchId },
-      include: { creator: { select: { name: true } }, updater: { select: { name: true } } },
-    });
+    const item = await tx.stockItem.findFirst({ where: { id, branchId }, include: ITEM_INCLUDE });
     return item ? toRow(item) : null;
   });
 }
@@ -140,7 +142,7 @@ export async function createStockItem(
   input: {
     name: string;
     unit?: string;
-    category: StockCategoryValue;
+    categoryId: string;
     minAlertLevel: number;
     currentQuantity: number;
   }
@@ -152,7 +154,7 @@ export async function createStockItem(
           branchId,
           name: input.name,
           unit: input.unit ?? null,
-          category: input.category,
+          categoryId: input.categoryId,
           minAlertLevel: input.minAlertLevel,
           currentQuantity: input.currentQuantity,
           createdBy: userId,
@@ -173,7 +175,7 @@ export async function updateStockItem(
   branchId: string,
   userId: string,
   id: string,
-  input: { name: string; unit?: string; category: StockCategoryValue; minAlertLevel: number }
+  input: { name: string; unit?: string; categoryId: string; minAlertLevel: number }
 ): Promise<void> {
   try {
     const result = await withTenantContext({ userId, branchId }, (tx) =>
@@ -182,7 +184,7 @@ export async function updateStockItem(
         data: {
           name: input.name,
           unit: input.unit ?? null,
-          category: input.category,
+          categoryId: input.categoryId,
           minAlertLevel: input.minAlertLevel,
           updatedBy: userId,
         },
