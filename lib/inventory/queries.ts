@@ -98,7 +98,14 @@ export async function listStockItemsGroupedByCategory(
     ? await listActiveStockItems(branchId, userId)
     : await listStockItems(branchId, userId);
 
-  const order: StockCategoryValue[] = ["kitchen", "barista", "cashier", "kedai"];
+  const order: StockCategoryValue[] = [
+    "kitchen",
+    "barista",
+    "cashier",
+    "kedai",
+    "sauce_korean",
+    "sauce_honey_garlic",
+  ];
   return order.map((category) => ({
     category,
     items: rows.filter((r) => r.category === category),

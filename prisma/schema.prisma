@@ -1015,6 +1015,8 @@ enum StockCategory {
   barista
   cashier
   kedai
+  sauce_korean
+  sauce_honey_garlic
 
   @@map("stock_category_enum")
 }

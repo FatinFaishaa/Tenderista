@@ -7,7 +7,14 @@ const quantityField = z.coerce
   .max(99_999_999.99, "Too large")
   .multipleOf(0.01, "Use at most 2 decimal places");
 
-export const STOCK_CATEGORIES = ["kitchen", "barista", "cashier", "kedai"] as const;
+export const STOCK_CATEGORIES = [
+  "kitchen",
+  "barista",
+  "cashier",
+  "kedai",
+  "sauce_korean",
+  "sauce_honey_garlic",
+] as const;
 export type StockCategoryValue = (typeof STOCK_CATEGORIES)[number];
 
 export const STOCK_CATEGORY_LABELS: Record<StockCategoryValue, string> = {
@@ -15,6 +22,8 @@ export const STOCK_CATEGORY_LABELS: Record<StockCategoryValue, string> = {
   barista: "Barista",
   cashier: "Cashier",
   kedai: "Kedai (Umum)",
+  sauce_korean: "Sauce Korean",
+  sauce_honey_garlic: "Sauce Honey Garlic",
 };
 
 export const stockItemSchema = z.object({
