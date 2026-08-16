@@ -175,7 +175,7 @@ export default async function StaffHomePage({
             width={140}
             height={140}
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-2 -right-2 h-20 w-20 object-contain"
+            className="pointer-events-none absolute -top-2 -right-2 h-16 w-16 object-contain"
           />
           <div className="relative z-10 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${clockTheme.iconBg}`}>

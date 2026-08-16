@@ -63,14 +63,20 @@ export function ClockButton({
           Clocked out at {clockOutTime} — done for today.
         </p>
       ) : (
-        <Button
-          onClick={() => onAction("clock-out")}
-          disabled={loading}
-          variant="secondary"
-          className="w-full"
-        >
-          {loading ? "Clocking out…" : "Clock Out"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="flex flex-1 items-center gap-1.5 rounded-full bg-green-50 px-3 py-2 text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-400">
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            On Duty
+          </span>
+          <Button
+            onClick={() => onAction("clock-out")}
+            disabled={loading}
+            variant="secondary"
+            className="flex-1"
+          >
+            {loading ? "Clocking out…" : "Clock Out"}
+          </Button>
+        </div>
       )}
     </div>
   );
