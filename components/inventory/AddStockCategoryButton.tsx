@@ -51,7 +51,7 @@ export function AddStockCategoryButton({ branchSlug }: { branchSlug: string }) {
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nama folder"
+        placeholder="Folder name"
         maxLength={150}
         className="h-7 w-32 rounded-lg border border-zinc-300 bg-white px-2 text-xs text-zinc-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
       />

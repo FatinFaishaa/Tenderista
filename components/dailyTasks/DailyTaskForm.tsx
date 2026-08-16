@@ -92,7 +92,7 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
           onChange={(e) => setIsPriority(e.target.checked)}
           className="h-5 w-5 accent-brand-maroon"
         />
-        ⭐ Tandakan sebagai Penting
+        ⭐ Mark as Priority
       </label>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>

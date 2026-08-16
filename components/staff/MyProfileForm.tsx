@@ -83,7 +83,7 @@ export function MyProfileForm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Gagal simpan. Cuba lagi.");
+        setError(data.error ?? "Failed to save. Try again.");
         return;
       }
       setSaved({
@@ -102,11 +102,11 @@ export function MyProfileForm({
 
   if (mode === "view") {
     const rows = [
-      { icon: User, label: "Nama", value: saved.name || "—" },
-      { icon: Calendar, label: "Tarikh Lahir", value: formatDateDisplay(saved.dateOfBirth) },
-      { icon: MapPin, label: "Alamat", value: saved.homeAddress || "—" },
-      { icon: Phone, label: "No. Telefon", value: saved.contactPhone || "—" },
-      { icon: ShieldAlert, label: "Kontak Kecemasan", value: saved.emergencyContact || "—" },
+      { icon: User, label: "Name", value: saved.name || "—" },
+      { icon: Calendar, label: "Date of Birth", value: formatDateDisplay(saved.dateOfBirth) },
+      { icon: MapPin, label: "Address", value: saved.homeAddress || "—" },
+      { icon: Phone, label: "Phone Number", value: saved.contactPhone || "—" },
+      { icon: ShieldAlert, label: "Emergency Contact", value: saved.emergencyContact || "—" },
     ];
 
     return (
@@ -115,7 +115,7 @@ export function MyProfileForm({
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-cream dark:bg-zinc-800">
             <User className="h-4 w-4 text-brand-maroon" />
           </span>
-          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Maklumat Peribadi</p>
+          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Personal Information</p>
         </div>
         {rows.map((row, i) => {
           const Icon = row.icon;
@@ -143,7 +143,7 @@ export function MyProfileForm({
             className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-maroon px-4 py-2.5 text-sm font-medium text-white"
           >
             <Pencil className="h-4 w-4" />
-            Edit Maklumat
+            Edit Information
           </button>
         </div>
       </div>
@@ -152,10 +152,10 @@ export function MyProfileForm({
 
   return (
     <div className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Edit Maklumat Peribadi</p>
+      <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Edit Personal Information</p>
 
       <div>
-        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Nama</label>
+        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Name</label>
         <input
           type="text"
           value={name}
@@ -165,7 +165,7 @@ export function MyProfileForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Tarikh Lahir</label>
+        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Date of Birth</label>
         <input
           type="date"
           value={dateOfBirth}
@@ -175,7 +175,7 @@ export function MyProfileForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Alamat</label>
+        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Address</label>
         <textarea
           value={address}
           onChange={(e) => setAddress(e.target.value)}
@@ -185,7 +185,7 @@ export function MyProfileForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">No. Telefon</label>
+        <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Phone Number</label>
         <input
           type="tel"
           value={contactPhone}
@@ -197,13 +197,13 @@ export function MyProfileForm({
 
       <div>
         <label className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">
-          Kontak Kecemasan
+          Emergency Contact
         </label>
         <input
           type="text"
           value={emergencyContact}
           onChange={(e) => setEmergencyContact(e.target.value)}
-          placeholder="019-876 5432 (Ibu)"
+          placeholder="019-876 5432 (Mom)"
           className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50"
         />
       </div>
