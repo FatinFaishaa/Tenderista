@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getDailyRosterWithProfile, getLateCountToday, getPublishedRosterForWeek } from "@/lib/roster/queries";
@@ -264,7 +264,15 @@ async function WeeklyPreviewForStaff({
                           "border-zinc-200 bg-zinc-50 text-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-700";
                         let label: React.ReactNode = <span>—</span>;
 
-                        if (cell.isOffDay) {
+                        if (cell.isOnLeave) {
+                          badgeClass =
+                            "border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300";
+                          label = (
+                            <span className="inline-flex items-center gap-1">
+                              <Lock className="h-3 w-3" /> Cuti
+                            </span>
+                          );
+                        } else if (cell.isOffDay) {
                           badgeClass =
                             "border-zinc-200 bg-zinc-100 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400";
                           label = "OFF";

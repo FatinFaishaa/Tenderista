@@ -11,6 +11,7 @@ export type RosterCell = {
   startTime: string | null;
   endTime: string | null;
   isPublished: boolean;
+  isOnLeave: boolean;
 };
 
 export type RosterStaffRow = {
@@ -27,7 +28,23 @@ const EMPTY_CELL: RosterCell = {
   startTime: null,
   endTime: null,
   isPublished: false,
+  isOnLeave: false,
 };
+
+function buildLeaveKeySet(
+  leaves: { staffId: string; startDate: Date; endDate: Date }[],
+  weekDates: Date[]
+): Set<string> {
+  const keys = new Set<string>();
+  for (const leave of leaves) {
+    for (const d of weekDates) {
+      if (d >= leave.startDate && d <= leave.endDate) {
+        keys.add(`${leave.staffId}_${formatDateKey(d)}`);
+      }
+    }
+  }
+  return keys;
+}
 
 /** The Owner's weekly grid — active staff × 7 days. Days with no Schedule row yet
  * come back as an empty (unassigned) cell rather than being omitted, so the grid
@@ -41,7 +58,7 @@ export async function getRosterForWeek(
   const weekEnd = weekDates[6];
 
   return withTenantContext({ userId, branchId }, async (tx) => {
-    const [staffList, scheduleRows] = await Promise.all([
+    const [staffList, scheduleRows, leaveRows] = await Promise.all([
       tx.staff.findMany({
         where: { branchId, status: "active" },
         include: { user: { select: { name: true, avatarEmoji: true, avatarImage: true } } },
@@ -50,17 +67,23 @@ export async function getRosterForWeek(
       tx.schedule.findMany({
         where: { branchId, date: { gte: weekStart, lte: weekEnd } },
       }),
+      tx.leaveRequest.findMany({
+        where: { branchId, status: "approved", startDate: { lte: weekEnd }, endDate: { gte: weekStart } },
+        select: { staffId: true, startDate: true, endDate: true },
+      }),
     ]);
 
     const byKey = new Map(
       scheduleRows.map((row) => [`${row.staffId}_${formatDateKey(row.date)}`, row])
     );
+    const leaveKeys = buildLeaveKeySet(leaveRows, weekDates);
 
     return staffList.map((staff) => {
       const days: Record<string, RosterCell> = {};
       for (const d of weekDates) {
         const key = formatDateKey(d);
         const row = byKey.get(`${staff.id}_${key}`);
+        const isOnLeave = leaveKeys.has(`${staff.id}_${key}`);
         days[key] = row
           ? {
               isOffDay: row.isOffDay,
@@ -68,8 +91,9 @@ export async function getRosterForWeek(
               startTime: row.startTime ? dateToTimeString(row.startTime) : null,
               endTime: row.endTime ? dateToTimeString(row.endTime) : null,
               isPublished: row.isPublished,
+              isOnLeave,
             }
-          : { ...EMPTY_CELL };
+          : { ...EMPTY_CELL, isOnLeave };
       }
       return {
         staffId: staff.id,
@@ -396,7 +420,7 @@ export async function getPublishedRosterForWeek(
   const weekEnd = weekDates[6];
 
   return withTenantContext({ userId, branchId }, async (tx) => {
-    const [staffList, scheduleRows] = await Promise.all([
+    const [staffList, scheduleRows, leaveRows] = await Promise.all([
       tx.staff.findMany({
         where: { branchId, status: "active" },
         include: { user: { select: { name: true, avatarEmoji: true, avatarImage: true } } },
@@ -405,17 +429,23 @@ export async function getPublishedRosterForWeek(
       tx.schedule.findMany({
         where: { branchId, date: { gte: weekStart, lte: weekEnd }, isPublished: true },
       }),
+      tx.leaveRequest.findMany({
+        where: { branchId, status: "approved", startDate: { lte: weekEnd }, endDate: { gte: weekStart } },
+        select: { staffId: true, startDate: true, endDate: true },
+      }),
     ]);
 
     const byKey = new Map(
       scheduleRows.map((row) => [`${row.staffId}_${formatDateKey(row.date)}`, row])
     );
+    const leaveKeys = buildLeaveKeySet(leaveRows, weekDates);
 
     return staffList.map((staff) => {
       const days: Record<string, RosterCell> = {};
       for (const d of weekDates) {
         const key = formatDateKey(d);
         const row = byKey.get(`${staff.id}_${key}`);
+        const isOnLeave = leaveKeys.has(`${staff.id}_${key}`);
         days[key] = row
           ? {
               isOffDay: row.isOffDay,
@@ -423,8 +453,9 @@ export async function getPublishedRosterForWeek(
               startTime: row.startTime ? dateToTimeString(row.startTime) : null,
               endTime: row.endTime ? dateToTimeString(row.endTime) : null,
               isPublished: row.isPublished,
+              isOnLeave,
             }
-          : { ...EMPTY_CELL };
+          : { ...EMPTY_CELL, isOnLeave };
       }
       return {
         staffId: staff.id,

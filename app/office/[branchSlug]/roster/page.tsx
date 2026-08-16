@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { RosterCellEditor } from "@/components/roster/RosterCellEditor";
 import { PublishWeekButton } from "@/components/roster/PublishWeekButton";
 import { DailyRosterCards } from "@/components/roster/DailyRosterCards";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Lock } from "lucide-react";
 import { Avatar } from "@/components/staff/Avatar";
 import { cn } from "@/lib/utils/cn";
 
@@ -341,7 +341,15 @@ async function PreviewRoster({
                       "border-zinc-200 bg-zinc-50 text-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-700";
                     let label: React.ReactNode = <span>—</span>;
 
-                    if (cell.isOffDay) {
+                    if (cell.isOnLeave) {
+                      badgeClass =
+                        "border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300";
+                      label = (
+                        <span className="inline-flex items-center gap-1">
+                          <Lock className="h-3 w-3" /> Cuti
+                        </span>
+                      );
+                    } else if (cell.isOffDay) {
                       badgeClass =
                         "border-zinc-200 bg-zinc-100 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400";
                       label = "OFF";

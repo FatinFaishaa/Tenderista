@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
-import { Pencil } from "lucide-react";
+import { Pencil, Lock } from "lucide-react";
 
 type ShiftOption = { id: string; name: string; startTime: string; endTime: string };
 
@@ -14,6 +14,7 @@ type Cell = {
   startTime: string | null;
   endTime: string | null;
   isPublished: boolean;
+  isOnLeave: boolean;
 };
 
 export function RosterCellEditor({
@@ -36,6 +37,18 @@ export function RosterCellEditor({
   const [startTime, setStartTime] = useState(cell.startTime ?? "");
   const [endTime, setEndTime] = useState(cell.endTime ?? "");
   const [saving, setSaving] = useState(false);
+
+  if (cell.isOnLeave) {
+    return (
+      <div
+        className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300"
+        title="Staff ini sedang bercuti (diluluskan) — batalkan cuti dulu untuk assign shift."
+      >
+        <Lock className="h-3 w-3" />
+        Cuti
+      </div>
+    );
+  }
 
   function applyShiftDefaults(id: string) {
     setShiftId(id);
