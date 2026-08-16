@@ -219,20 +219,13 @@ export default async function StaffHomePage({
       </div>
 
       {/* Quote banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-brand-gold/30 bg-brand-cream p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="relative z-10 max-w-[65%]">
-          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-            &ldquo;Today's work, tomorrow's reward.&rdquo;
-          </p>
-          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Effort, prayer, trust in God.</p>
-        </div>
+      <div className="overflow-hidden rounded-2xl shadow-sm">
         <Image
-          src="/brand/chicken-bucket.png"
-          alt=""
-          width={160}
-          height={160}
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-3 -right-2 h-24 w-24 object-contain"
+          src="/brand/you-did-great-banner.jpg"
+          alt="You did great today! Thank you for being part of Tenderista."
+          width={900}
+          height={552}
+          className="h-auto w-full object-contain"
         />
       </div>
 
