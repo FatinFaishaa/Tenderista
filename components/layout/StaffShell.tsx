@@ -34,13 +34,16 @@ export function StaffShell({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-brand-cream dark:bg-zinc-950">
-      <header className="relative overflow-hidden rounded-b-[2.5rem] bg-gradient-to-br from-[#5c0f0f] to-brand-maroon px-4 pb-8 pt-4 text-white shadow-lg">
+    <div className="relative flex min-h-screen flex-col">
+      <div className="fixed inset-0 -z-10">
+        <Image src="/brand/app-background.png" alt="" fill priority className="object-cover" />
+      </div>
+      <header className="relative px-4 pb-6 pt-4 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-brand-gold bg-white/10">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-brand-gold shadow-md">
               <Image
-                src="/brand/mascot-chick.png"
+                src="/brand/logo-badge.png"
                 alt="Tenderista"
                 width={48}
                 height={48}
@@ -48,16 +51,16 @@ export function StaffShell({
               />
             </span>
             <div>
-              <p className="font-display text-lg leading-none tracking-wide">TENDERISTA</p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70">
-                {branchName}
+              <p className="font-display text-xl leading-none tracking-wide">TENDERISTA</p>
+              <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/70">
+                — {branchName} —
               </p>
             </div>
           </div>
           <button
             onClick={onLogout}
             aria-label="Log out"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 hover:bg-white/20"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15 hover:bg-white/25"
           >
             <LogOut className="h-4 w-4" />
           </button>
