@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Clock,
   ClipboardCheck,
@@ -11,8 +10,8 @@ import {
   Package,
   MapPin,
   Wallet,
-  ArrowRight,
 } from "lucide-react";
+import Image from "next/image";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getMyProfile } from "@/lib/staff/queries";
@@ -66,7 +65,7 @@ export default async function StaffHomePage({
 
   const SUMMARY_ITEMS = [
     {
-      label: "Checklist Selesai",
+      label: "Checklist Done",
       value: `${checklistCompleted}/${checklistTotal}`,
       icon: ClipboardCheck,
       bg: "bg-pink-100 dark:bg-pink-950",
@@ -74,7 +73,7 @@ export default async function StaffHomePage({
       href: `/${branchSlug}/checklists`,
     },
     {
-      label: "Tugasan Hari Ini",
+      label: "Today's Tasks",
       value: String(dailyTasks.length),
       icon: ListTodo,
       bg: "bg-amber-100 dark:bg-amber-950",
@@ -82,7 +81,7 @@ export default async function StaffHomePage({
       href: `/${branchSlug}/daily-tasks`,
     },
     {
-      label: "Staf Bertugas",
+      label: "Staff on Duty",
       value: String(schedule.workingCount),
       icon: Users,
       bg: "bg-green-100 dark:bg-green-950",
@@ -90,7 +89,7 @@ export default async function StaffHomePage({
       href: `/${branchSlug}/schedule?view=today`,
     },
     {
-      label: "Pengumuman",
+      label: "Announcements",
       value: String(announcements.length),
       icon: Megaphone,
       bg: "bg-blue-100 dark:bg-blue-950",
@@ -106,9 +105,9 @@ export default async function StaffHomePage({
         <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} className="shadow-sm" />
         <div className="min-w-0 flex-1">
           <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-            Hai, {profile.name.split(" ")[0]}! 👋
+            Hi, {profile.name.split(" ")[0]}! 👋
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Selamat datang kembali</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Welcome back</p>
           <p className="flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
             <MapPin className="h-3 w-3" /> {branch.name}
           </p>
@@ -131,17 +130,17 @@ export default async function StaffHomePage({
             </span>
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Anggaran Gaji Bulan Ini
+                Estimated Salary This Month
               </p>
               <p className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
                 RM {earnings.amount.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               {earnings.salaryType === "hourly" ? (
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {earnings.workedHours.toFixed(1)} jam × RM {earnings.hourlyRate.toFixed(2)}/jam
+                  {earnings.workedHours.toFixed(1)} hrs × RM {earnings.hourlyRate.toFixed(2)}/hr
                 </p>
               ) : (
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">Gaji bulanan tetap</p>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">Fixed monthly salary</p>
               )}
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-zinc-300 dark:text-zinc-600" />
@@ -158,18 +157,18 @@ export default async function StaffHomePage({
             </span>
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Syif Hari Ini
+                Today's Shift
               </p>
               {attendance.scheduled && !attendance.scheduled.isOffDay ? (
                 <p className="text-lg font-bold text-brand-maroon dark:text-red-400">
                   {attendance.scheduled.startTime} – {attendance.scheduled.endTime}
                 </p>
               ) : (
-                <p className="text-sm text-zinc-400 dark:text-zinc-500">Tiada syif dijadualkan</p>
+                <p className="text-sm text-zinc-400 dark:text-zinc-500">No shift scheduled</p>
               )}
               {!attendance.clockInAt && (
                 <span className="mt-1 inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-950 dark:text-green-400">
-                  Belum Clock In
+                  Not Clocked In
                 </span>
               )}
             </div>
@@ -188,26 +187,30 @@ export default async function StaffHomePage({
       {/* Summary grid */}
       <div>
         <h2 className="mb-2 text-sm font-bold text-zinc-900 dark:text-zinc-50">
-          ✨ Ringkasan Hari Ini
+          ✨ Today's Summary
         </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {SUMMARY_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.label}
-                className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="flex flex-col items-center justify-between rounded-2xl border border-zinc-200 bg-white p-2.5 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
               >
-                <span className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${item.bg}`}>
-                  <Icon className={`h-6 w-6 ${item.color}`} />
+                <span className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full ${item.bg}`}>
+                  <Icon className={`h-4 w-4 ${item.color}`} />
                 </span>
-                <p className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-50">{item.value}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{item.label}</p>
+                <p className="mt-1.5 text-base font-bold leading-tight text-zinc-900 dark:text-zinc-50">
+                  {item.value}
+                </p>
+                <p className="text-[10px] leading-tight text-zinc-500 dark:text-zinc-400">
+                  {item.label}
+                </p>
                 <Link
                   href={item.href}
-                  className="mt-1.5 inline-flex items-center gap-0.5 text-xs font-medium text-brand-maroon dark:text-red-400"
+                  className="mt-1 inline-flex items-center gap-0.5 text-[10px] font-medium text-brand-maroon dark:text-red-400"
                 >
-                  Lihat Detail <ChevronRight className="h-3 w-3" />
+                  Detail <ChevronRight className="h-2.5 w-2.5" />
                 </Link>
               </div>
             );
@@ -219,9 +222,9 @@ export default async function StaffHomePage({
       <div className="relative overflow-hidden rounded-2xl border border-brand-gold/30 bg-brand-cream p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="relative z-10 max-w-[65%]">
           <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-            &ldquo;Kerja hari ini, hasil esok hari.&rdquo;
+            &ldquo;Today's work, tomorrow's reward.&rdquo;
           </p>
-          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Usaha, doa, tawakal.</p>
+          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Effort, prayer, trust in God.</p>
         </div>
         <Image
           src="/brand/chicken-bucket.png"
@@ -238,13 +241,13 @@ export default async function StaffHomePage({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-              Tugasan Hari Ini
+              Today's Tasks
             </h2>
             <Link
               href={`/${branchSlug}/daily-tasks`}
               className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
             >
-              Lihat Semua <ChevronRight className="h-3 w-3" />
+              View All <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -294,7 +297,7 @@ export default async function StaffHomePage({
             </span>
             <div>
               <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Inventory</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Kemaskini kuantiti stock</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Update stock quantity</p>
             </div>
           </div>
           <ChevronRight className="h-5 w-5 text-zinc-400" />
@@ -305,12 +308,12 @@ export default async function StaffHomePage({
       {latestAnnouncement && (
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Pengumuman</h2>
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Announcements</h2>
             <Link
               href={`/${branchSlug}/announcements`}
               className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
             >
-              Lihat Semua <ChevronRight className="h-3 w-3" />
+              View All <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="flex gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
