@@ -130,7 +130,7 @@ export default async function OwnerDashboardPage({
           <Link
             href={`/office/${branchSlug}/staff/leave-requests`}
             className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-950"
-            aria-label={`${pendingLeave.count} permohonan cuti tertunda`}
+            aria-label={`${pendingLeave.count} pending leave requests`}
           >
             <Bell className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -229,11 +229,11 @@ export default async function OwnerDashboardPage({
             href={`/office/${branchSlug}/inventory`}
             className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
           >
-            Lihat Semua <ChevronRight className="h-3 w-3" />
+            View All <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
         {lowStockItems.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-500">Semua stok mencukupi 👍</p>
+          <p className="text-sm text-zinc-400 dark:text-zinc-500">All stock is sufficient 👍</p>
         ) : (
           <div className="space-y-2">
             {lowStockItems.map((item) => (
@@ -259,11 +259,11 @@ export default async function OwnerDashboardPage({
             href={`/office/${branchSlug}/staff/leave-requests`}
             className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
           >
-            Lihat Semua <ChevronRight className="h-3 w-3" />
+            View All <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
         {pendingLeave.count === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-500">Tiada permohonan cuti tertunda</p>
+          <p className="text-sm text-zinc-400 dark:text-zinc-500">No pending leave requests</p>
         ) : (
           <div className="space-y-3">
             {pendingLeave.recent.map((request) => (
@@ -299,7 +299,7 @@ export default async function OwnerDashboardPage({
             href={`/office/${branchSlug}/financials`}
             className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
           >
-            Lihat Semua <ChevronRight className="h-3 w-3" />
+            View All <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
         <WeeklySalesChart data={chartData} />
