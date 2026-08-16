@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Clock,
   ClipboardCheck,
@@ -9,7 +10,6 @@ import {
   ChevronRight,
   Package,
   MapPin,
-  Store,
   Wallet,
   ArrowRight,
 } from "lucide-react";
@@ -113,9 +113,13 @@ export default async function StaffHomePage({
             <MapPin className="h-3 w-3" /> {branch.name}
           </p>
         </div>
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-cream dark:bg-zinc-800">
-          <Store className="h-6 w-6 text-brand-maroon" />
-        </span>
+        <Image
+          src="/brand/storefront.png"
+          alt="Tenderista"
+          width={112}
+          height={84}
+          className="h-16 w-auto shrink-0 object-contain"
+        />
       </div>
 
       {/* Estimated earnings this month */}
@@ -212,11 +216,21 @@ export default async function StaffHomePage({
       </div>
 
       {/* Quote banner */}
-      <div className="rounded-2xl border border-brand-gold/30 bg-brand-cream p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-          &ldquo;Kerja hari ini, hasil esok hari.&rdquo;
-        </p>
-        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Usaha, doa, tawakal.</p>
+      <div className="relative overflow-hidden rounded-2xl border border-brand-gold/30 bg-brand-cream p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="relative z-10 max-w-[65%]">
+          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+            &ldquo;Kerja hari ini, hasil esok hari.&rdquo;
+          </p>
+          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Usaha, doa, tawakal.</p>
+        </div>
+        <Image
+          src="/brand/chicken-bucket.png"
+          alt=""
+          width={160}
+          height={160}
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-3 -right-2 h-24 w-24 object-contain"
+        />
       </div>
 
       {/* Today's tasks */}
