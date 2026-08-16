@@ -300,6 +300,22 @@ async function PreviewRoster({
 
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Link href={`?view=preview&week=${formatDateKey(addDays(weekStart, -7))}`}>
+          <Button variant="secondary" className="flex items-center gap-1 px-2.5 py-1 text-xs">
+            <ChevronLeft className="h-3.5 w-3.5" /> Prev
+          </Button>
+        </Link>
+        <span className="flex items-center gap-1 text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+          <CalendarDays className="h-3.5 w-3.5 text-brand-maroon" />
+          {new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(weekStart)} – {new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(weekDates[6])}
+        </span>
+        <Link href={`?view=preview&week=${formatDateKey(addDays(weekStart, 7))}`}>
+          <Button variant="secondary" className="flex items-center gap-1 px-2.5 py-1 text-xs">
+            Next <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
+      </div>
       <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
         Begini staff akan nampak jadual yang telah publish.
       </p>
