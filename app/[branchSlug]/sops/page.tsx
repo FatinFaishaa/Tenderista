@@ -20,10 +20,10 @@ export default async function StaffSopsPage({
   return (
     <div>
       <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">📖 SOP</h1>
-      <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">Pilih kategori SOP</p>
+      <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">Select an SOP category</p>
 
       {categories.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Tiada SOP lagi.</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">No SOPs yet.</p>
       )}
 
       <div className="space-y-3">

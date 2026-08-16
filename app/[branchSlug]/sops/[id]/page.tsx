@@ -38,7 +38,7 @@ export default async function StaffSopDetailPage({
         href={`/${branchSlug}/sops/category/${sop.categoryId}`}
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        ← Kembali ke {sop.categoryName}
+        ← Back to {sop.categoryName}
       </Link>
       <Card>
         <Badge>{sop.categoryName}</Badge>

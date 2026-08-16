@@ -33,7 +33,7 @@ export default async function SopCategoryDetailPage({
         href={`/${branchSlug}/sops`}
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        <ChevronLeft className="h-4 w-4" /> Kembali ke Kategori
+        <ChevronLeft className="h-4 w-4" /> Back to Categories
       </Link>
 
       <div className="mb-4 flex items-center gap-3">
@@ -49,7 +49,7 @@ export default async function SopCategoryDetailPage({
       </div>
 
       {category.sops.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Tiada SOP dalam kategori ini.</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">No SOPs in this category.</p>
       ) : (
         <div className="space-y-2">
           {category.sops.map((sop) => (
@@ -66,7 +66,7 @@ export default async function SopCategoryDetailPage({
                   {sop.title}
                 </p>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                  Dikemaskini {formatDate(sop.updatedAt)}
+                  Updated {formatDate(sop.updatedAt)}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" />
