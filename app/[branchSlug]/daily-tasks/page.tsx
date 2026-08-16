@@ -38,7 +38,7 @@ export default async function StaffDailyTasksPage({
           <div className="flex items-center gap-2">
             <span className="text-xl">📝</span>
             <p className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-              Tugasan Hari Ini
+              Today's Tasks
             </p>
           </div>
           <p className="text-sm font-bold text-brand-maroon dark:text-red-400">
@@ -58,21 +58,21 @@ export default async function StaffDailyTasksPage({
 
       {tasks.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Tiada tugasan lagi — semak semula sebaik sahaja Owner atau Manager anda menetapkannya.
+          No tasks yet — check back once your Owner or Manager assigns some.
         </p>
       ) : (
         <>
-          {/* Belum Selesai */}
+          {/* Not Done */}
           <div>
             <div className="mb-2 flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-orange-400">
                 <Clock className="h-3.5 w-3.5 text-orange-500" />
               </span>
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Belum Selesai</h2>
+              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Not Done</h2>
             </div>
             {incompleteTasks.length === 0 ? (
               <p className="text-sm text-zinc-400 dark:text-zinc-500">
-                Semua tugasan sudah selesai! 🎉
+                All tasks completed! 🎉
               </p>
             ) : (
               <div className="space-y-2">
@@ -91,14 +91,14 @@ export default async function StaffDailyTasksPage({
             )}
           </div>
 
-          {/* Selesai Hari Ini */}
+          {/* Completed Today */}
           <div>
             <div className="mb-2 flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-green-500">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
               </span>
               <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-                Selesai Hari Ini ({completedTasks.length})
+                Completed Today ({completedTasks.length})
               </h2>
             </div>
             {completedTasks.length === 0 ? (
@@ -107,7 +107,7 @@ export default async function StaffDailyTasksPage({
                   <ClipboardList className="h-7 w-7 text-brand-maroon" />
                 </span>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Belum ada tugasan selesai.
+                  No tasks completed yet.
                 </p>
               </div>
             ) : (

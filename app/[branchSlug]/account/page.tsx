@@ -24,7 +24,7 @@ const MENU_ITEMS = [
 const SALARY_TYPE_LABELS: Record<string, string> = {
   monthly: "Full-time (Bulanan)",
   hourly: "Part-time (Sejam)",
-  daily: "Harian",
+  daily: "Daily",
 };
 
 export default async function AccountPage({
@@ -47,7 +47,7 @@ export default async function AccountPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Akaun</h1>
+      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Account</h1>
 
       <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} />

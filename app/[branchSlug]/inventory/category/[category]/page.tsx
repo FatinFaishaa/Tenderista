@@ -28,7 +28,7 @@ export default async function StaffInventoryCategoryPage({
         href={`/${branchSlug}/inventory`}
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        <ChevronLeft className="h-4 w-4" /> Kembali
+        <ChevronLeft className="h-4 w-4" /> Back
       </Link>
 
       <h1 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">

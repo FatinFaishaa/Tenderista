@@ -49,7 +49,7 @@ export default async function StaffSchedulePage({
     <div>
       <div className="mb-4 flex items-center justify-between gap-2">
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          {view === "my" ? "Jadual Saya" : view === "preview" ? "Preview Minggu" : "Roster Hari Ini"}
+          {view === "my" ? "My Schedule" : view === "preview" ? "Week Preview" : "Today's Roster"}
         </h1>
         <div className="flex gap-1.5">
           <Link href="?view=my">
@@ -57,7 +57,7 @@ export default async function StaffSchedulePage({
               variant={view === "my" ? "primary" : "secondary"}
               className="px-2 py-1 text-xs"
             >
-              Jadual Saya
+              My Schedule
             </Button>
           </Link>
           <Link href="?view=today">
@@ -65,7 +65,7 @@ export default async function StaffSchedulePage({
               variant={view === "today" ? "primary" : "secondary"}
               className="px-2 py-1 text-xs"
             >
-              Hari Ini
+              Today
             </Button>
           </Link>
           <Link href="?view=preview">
@@ -137,14 +137,14 @@ async function TodaysRoster({
             </span>
             <div className="flex-1">
               <p className="text-sm font-semibold text-brand-maroon dark:text-red-400">
-                Syif Saya Hari Ini
+                My Shift Today
               </p>
               {myAttendance.scheduled && !myAttendance.scheduled.isOffDay ? (
                 <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
                   {myAttendance.scheduled.startTime} – {myAttendance.scheduled.endTime}
                 </p>
               ) : (
-                <p className="text-sm text-zinc-400 dark:text-zinc-500">Tiada syif dijadualkan</p>
+                <p className="text-sm text-zinc-400 dark:text-zinc-500">No shift scheduled</p>
               )}
             </div>
           </div>
@@ -226,7 +226,7 @@ async function WeeklyPreviewForStaff({
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         {roster.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Tiada staf aktif.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">No active staff.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-sm">
@@ -269,7 +269,7 @@ async function WeeklyPreviewForStaff({
                             "border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300";
                           label = (
                             <span className="inline-flex items-center gap-1">
-                              <Lock className="h-3 w-3" /> Cuti
+                              <Lock className="h-3 w-3" /> Leave
                             </span>
                           );
                         } else if (cell.isOffDay) {
