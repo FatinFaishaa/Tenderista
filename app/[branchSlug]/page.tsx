@@ -236,54 +236,6 @@ export default async function StaffHomePage({
         />
       </div>
 
-      {/* Today's tasks */}
-      {dailyTasks.length > 0 && (
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-              Today's Tasks
-            </h2>
-            <Link
-              href={`/${branchSlug}/daily-tasks`}
-              className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
-            >
-              View All <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            {dailyTasks.slice(0, 3).map((task, i) => (
-              <div
-                key={task.id}
-                className={`flex items-center gap-3 px-4 py-3.5 ${
-                  i !== Math.min(dailyTasks.length, 3) - 1
-                    ? "border-b border-zinc-100 dark:border-zinc-800"
-                    : ""
-                }`}
-              >
-                <span
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
-                    task.isCompleted
-                      ? "bg-brand-maroon text-white"
-                      : "border-2 border-zinc-300 dark:border-zinc-600"
-                  }`}
-                >
-                  {task.isCompleted && "✓"}
-                </span>
-                <span
-                  className={`flex-1 text-sm font-medium ${
-                    task.isCompleted
-                      ? "text-zinc-400 line-through dark:text-zinc-600"
-                      : "text-zinc-900 dark:text-zinc-50"
-                  }`}
-                >
-                  {task.title}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Inventory shortcut */}
       <div>
         <h2 className="mb-2 text-sm font-bold text-zinc-900 dark:text-zinc-50">Inventory</h2>

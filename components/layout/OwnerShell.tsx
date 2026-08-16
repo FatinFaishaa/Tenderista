@@ -51,7 +51,7 @@ export function OwnerShell({
               />
             </span>
             <div>
-              <p className="font-display text-xl leading-none tracking-wide">TENDERISTA</p>
+              <p className="font-sans text-xl font-bold leading-none tracking-wide">TENDERISTA</p>
               <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/70">
                 — {branchName} —
               </p>
