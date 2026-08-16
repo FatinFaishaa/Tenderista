@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { listStockItemsGroupedByCategory } from "@/lib/inventory/queries";
-import { StockQuantityEditor } from "@/components/inventory/StockQuantityEditor";
+import { StaffCategoryItemsList } from "@/components/inventory/StaffCategoryItemsList";
 
 export default async function StaffInventoryCategoryPage({
   params,
@@ -35,25 +35,7 @@ export default async function StaffInventoryCategoryPage({
         {group.categoryName}
       </h1>
 
-      {group.items.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          No stock items yet in this category.
-        </p>
-      ) : (
-        <div className="space-y-2">
-          {group.items.map((item) => (
-            <StockQuantityEditor
-              key={item.id}
-              branchSlug={branchSlug}
-              itemId={item.id}
-              name={item.name}
-              unit={item.unit}
-              initialQuantity={item.currentQuantity}
-              minAlertLevel={item.minAlertLevel}
-            />
-          ))}
-        </div>
-      )}
+      <StaffCategoryItemsList branchSlug={branchSlug} items={group.items} />
     </div>
   );
 }

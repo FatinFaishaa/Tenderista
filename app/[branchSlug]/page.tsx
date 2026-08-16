@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Clock, ClipboardCheck, ListTodo, Users, Megaphone, Sunrise, Moon, ChevronRight, Target, Calendar } from "lucide-react";
+import { Clock, ClipboardCheck, ListTodo, Users, Megaphone, Sunrise, Moon, ChevronRight, Target, Calendar, Package } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getMyProfile } from "@/lib/staff/queries";
@@ -220,69 +220,24 @@ export default async function StaffHomePage({
         </div>
       )}
 
-      {/* Checklist progress */}
+      {/* Inventory shortcut */}
       <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Checklist</h2>
-          <Link
-            href={`/${branchSlug}/checklists`}
-            className="flex items-center text-xs font-medium text-brand-maroon dark:text-red-400"
-          >
-            Lihat Semua <ChevronRight className="h-3 w-3" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href={`/${branchSlug}/checklists`}
-            className="rounded-2xl border border-orange-100 bg-orange-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-          >
-            <div className="flex items-center justify-between">
-              <Sunrise className="h-6 w-6 text-orange-500" />
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800">
-                <ChevronRight className="h-4 w-4 text-zinc-400" />
-              </span>
+        <h2 className="mb-2 text-sm font-bold text-zinc-900 dark:text-zinc-50">Inventory</h2>
+        <Link
+          href={`/${branchSlug}/inventory`}
+          className="flex items-center justify-between rounded-2xl border border-orange-100 bg-orange-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800">
+              <Package className="h-5 w-5 text-brand-maroon" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Inventory</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Kemaskini kuantiti stock</p>
             </div>
-            <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-              Opening Checklist
-            </p>
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-orange-100 dark:bg-zinc-800">
-              <div
-                className="h-full bg-brand-maroon"
-                style={{
-                  width: opening.total > 0 ? `${(opening.completed / opening.total) * 100}%` : "0%",
-                }}
-              />
-            </div>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              {opening.completed}/{opening.total} selesai
-            </p>
-          </Link>
-          <Link
-            href={`/${branchSlug}/closing-checklists`}
-            className="rounded-2xl border border-orange-100 bg-orange-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-          >
-            <div className="flex items-center justify-between">
-              <Moon className="h-6 w-6 text-brand-gold" />
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800">
-                <ChevronRight className="h-4 w-4 text-zinc-400" />
-              </span>
-            </div>
-            <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-              Closing Checklist
-            </p>
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-orange-100 dark:bg-zinc-800">
-              <div
-                className="h-full bg-brand-gold"
-                style={{
-                  width: closing.total > 0 ? `${(closing.completed / closing.total) * 100}%` : "0%",
-                }}
-              />
-            </div>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              {closing.completed}/{closing.total} selesai
-            </p>
-          </Link>
-        </div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-zinc-400" />
+        </Link>
       </div>
 
       {/* Announcements */}
