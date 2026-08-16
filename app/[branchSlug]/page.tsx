@@ -168,14 +168,14 @@ export default async function StaffHomePage({
 
       {/* Clock In card */}
       {attendance.hasStaffRecord && (
-        <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="relative rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <Image
             src={clockMascot}
             alt=""
             width={200}
             height={200}
             aria-hidden="true"
-            className="pointer-events-none absolute -top-4 -right-3 h-28 w-28 object-contain"
+            className="pointer-events-none absolute -top-10 -right-3 z-20 h-28 w-28 object-contain"
           />
           <div className="relative z-10 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${clockTheme.iconBg}`}>
