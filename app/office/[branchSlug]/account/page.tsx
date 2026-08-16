@@ -35,7 +35,7 @@ export default async function OwnerAccountPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Akaun</h1>
+      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Account</h1>
 
       <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} />
@@ -53,7 +53,7 @@ export default async function OwnerAccountPage({
 
       <div className="flex items-center gap-2">
         <span className="text-sm">🏪</span>
-        <p className="text-sm font-semibold text-brand-maroon dark:text-red-400">Pengurusan Kedai</p>
+        <p className="text-sm font-semibold text-brand-maroon dark:text-red-400">Store Management</p>
         <span className="h-px flex-1 border-t border-dashed border-zinc-300 dark:border-zinc-700" />
       </div>
 
