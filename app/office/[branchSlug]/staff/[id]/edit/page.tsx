@@ -27,7 +27,7 @@ export default async function EditStaffPage({
         href={`/office/${branchSlug}/staff`}
         className="inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        <ChevronLeft className="h-4 w-4" /> Kembali ke Staff
+        <ChevronLeft className="h-4 w-4" /> Back to Staff
       </Link>
 
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Edit Staff</h1>

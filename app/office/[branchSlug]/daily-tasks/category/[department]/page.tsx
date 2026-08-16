@@ -68,12 +68,12 @@ export default async function DailyTasksCategoryPage({
                 {task.isCompleted ? (
                   <p className="mt-1 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    Selesai oleh {task.completedByName}
+                    Completed by {task.completedByName}
                     {task.completedAt ? ` · ${formatTime(task.completedAt)}` : ""}
                   </p>
                 ) : (
                   <Badge tone="neutral" className="mt-1">
-                    Belum selesai
+                    Not completed
                   </Badge>
                 )}
               </div>

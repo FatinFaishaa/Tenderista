@@ -54,7 +54,7 @@ export default async function StaffDetailsPage({
         href={`/office/${branchSlug}/staff`}
         className="inline-flex items-center gap-1 text-sm font-medium text-brand-maroon dark:text-red-400"
       >
-        <ChevronLeft className="h-4 w-4" /> Kembali ke Staff
+        <ChevronLeft className="h-4 w-4" /> Back to Staff
       </Link>
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -91,7 +91,7 @@ export default async function StaffDetailsPage({
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
             <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-              Anggaran Gaji Bulan Ini
+              Estimated Salary This Month
             </p>
           </div>
           <div className="px-4 py-3">
@@ -104,10 +104,10 @@ export default async function StaffDetailsPage({
             </p>
             {earnings.salaryType === "hourly" ? (
               <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                {earnings.workedHours.toFixed(1)} jam × RM {earnings.hourlyRate.toFixed(2)}/jam
+                {earnings.workedHours.toFixed(1)} hrs × RM {earnings.hourlyRate.toFixed(2)}/hr
               </p>
             ) : (
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Gaji bulanan tetap</p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Fixed monthly salary</p>
             )}
           </div>
         </div>

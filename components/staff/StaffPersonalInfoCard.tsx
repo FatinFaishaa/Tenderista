@@ -22,12 +22,12 @@ export function StaffPersonalInfoCard({
   if (!personalInfo) return null;
 
   const rows = [
-    { icon: Calendar, label: "Tarikh Lahir", value: formatDateDisplay(personalInfo.dateOfBirth) },
-    { icon: MapPin, label: "Alamat", value: personalInfo.homeAddress || "—" },
-    { icon: Phone, label: "No. Telefon", value: personalInfo.contactPhone || "—" },
+    { icon: Calendar, label: "Date of Birth", value: formatDateDisplay(personalInfo.dateOfBirth) },
+    { icon: MapPin, label: "Address", value: personalInfo.homeAddress || "—" },
+    { icon: Phone, label: "Phone Number", value: personalInfo.contactPhone || "—" },
     {
       icon: ShieldAlert,
-      label: "Kontak Kecemasan",
+      label: "Emergency Contact",
       value: personalInfo.emergencyContact || "—",
     },
   ];
@@ -36,10 +36,10 @@ export function StaffPersonalInfoCard({
     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
         <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-          Maklumat Peribadi Staff
+          Staff Personal Information
         </p>
         <p className="text-xs text-zinc-400 dark:text-zinc-500">
-          Disimpan sendiri oleh staff — untuk rujukan sahaja
+          Self-reported by staff — for reference only
         </p>
       </div>
       {rows.map((row, i) => {

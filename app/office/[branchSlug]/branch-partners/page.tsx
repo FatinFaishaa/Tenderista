@@ -30,8 +30,7 @@ export default async function BranchPartnersPage({
             Partner Cawangan
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Beri seseorang akses penuh macam Owner, tapi khas untuk cawangan ini
-            sahaja.
+            Gives someone full access like an Owner, but limited to this branch only.
           </p>
         </div>
         <Link href={`/office/${branchSlug}/branch-partners/new`}>
@@ -40,7 +39,7 @@ export default async function BranchPartnersPage({
       </div>
       {partners.length === 0 ? (
         <p className="text-sm text-zinc-400 dark:text-zinc-600">
-          Belum ada Partner Cawangan lagi untuk cawangan ini.
+          No Partner Cawangan yet for this branch.
         </p>
       ) : (
         <div className="space-y-2">

@@ -317,7 +317,7 @@ async function PreviewRoster({
         </Link>
       </div>
       <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
-        Begini staff akan nampak jadual yang telah publish.
+        This is how staff will see the published schedule.
       </p>
 
       {roster.length === 0 ? (
@@ -362,7 +362,7 @@ async function PreviewRoster({
                         "border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300";
                       label = (
                         <span className="inline-flex items-center gap-1">
-                          <Lock className="h-3 w-3" /> Cuti
+                          <Lock className="h-3 w-3" /> Leave
                         </span>
                       );
                     } else if (cell.isOffDay) {
@@ -399,7 +399,7 @@ async function PreviewRoster({
             <tfoot>
               <tr className="border-t-2 border-zinc-200 dark:border-zinc-700">
                 <td className="whitespace-nowrap p-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                  🧹 Cuci Tandas
+                  🧹 Toilet Cleaning
                 </td>
                 {weekDates.map((d, i) => {
                   const key = formatDateKey(d);
