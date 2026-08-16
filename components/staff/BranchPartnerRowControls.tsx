@@ -15,7 +15,7 @@ export function BranchPartnerRowControls({
 
   async function onDelete() {
     const confirmed = window.confirm(
-      "Buang akses Partner Cawangan ini? Dia tak akan boleh masuk cawangan ini lagi."
+      "Remove this Partner Cawangan's access? They won't be able to access this branch anymore."
     );
     if (!confirmed) return;
     setLoading(true);

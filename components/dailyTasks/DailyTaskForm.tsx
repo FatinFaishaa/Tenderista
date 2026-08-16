@@ -82,7 +82,7 @@ export function DailyTaskForm({ branchSlug, taskId, initialValues }: Props) {
           ))}
         </select>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Pilih "All Staff" untuk tugasan yang dilihat oleh semua orang.
+          Choose "All Staff" for tasks visible to everyone.
         </p>
       </div>
       <label className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
