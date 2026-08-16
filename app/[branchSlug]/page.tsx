@@ -1,6 +1,18 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Clock, ClipboardCheck, ListTodo, Users, Megaphone, Sunrise, Moon, ChevronRight, Target, Calendar, Package } from "lucide-react";
+import {
+  Clock,
+  ClipboardCheck,
+  ListTodo,
+  Users,
+  Megaphone,
+  ChevronRight,
+  Package,
+  MapPin,
+  Store,
+  Wallet,
+  ArrowRight,
+} from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { resolveBranchForUser } from "@/lib/tenancy/branch";
 import { getMyProfile } from "@/lib/staff/queries";
@@ -13,7 +25,6 @@ import { getTodaysScheduleSummary } from "@/lib/roster/queries";
 import { listAnnouncements } from "@/lib/announcements/queries";
 import { ClockButton } from "@/components/attendance/ClockButton";
 import { formatBranchTime } from "@/lib/utils/branchDate";
-import { Wallet } from "lucide-react";
 
 function sumProgress(groups: { total: number; completed: number }[]) {
   return groups.reduce(
@@ -53,20 +64,58 @@ export default async function StaffHomePage({
   const checklistCompleted = opening.completed + closing.completed;
   const latestAnnouncement = announcements[0] ?? null;
 
+  const SUMMARY_ITEMS = [
+    {
+      label: "Checklist Selesai",
+      value: `${checklistCompleted}/${checklistTotal}`,
+      icon: ClipboardCheck,
+      bg: "bg-pink-100 dark:bg-pink-950",
+      color: "text-brand-maroon dark:text-red-400",
+      href: `/${branchSlug}/checklists`,
+    },
+    {
+      label: "Tugasan Hari Ini",
+      value: String(dailyTasks.length),
+      icon: ListTodo,
+      bg: "bg-amber-100 dark:bg-amber-950",
+      color: "text-amber-600 dark:text-amber-400",
+      href: `/${branchSlug}/daily-tasks`,
+    },
+    {
+      label: "Staf Bertugas",
+      value: String(schedule.workingCount),
+      icon: Users,
+      bg: "bg-green-100 dark:bg-green-950",
+      color: "text-green-600 dark:text-green-400",
+      href: `/${branchSlug}/schedule?view=today`,
+    },
+    {
+      label: "Pengumuman",
+      value: String(announcements.length),
+      icon: Megaphone,
+      bg: "bg-blue-100 dark:bg-blue-950",
+      color: "text-blue-600 dark:text-blue-400",
+      href: `/${branchSlug}/announcements`,
+    },
+  ] as const;
+
   return (
     <div className="space-y-5">
       {/* Greeting header */}
       <div className="flex items-center gap-3">
         <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} className="shadow-sm" />
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
             Hai, {profile.name.split(" ")[0]}! 👋
           </p>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">Selamat datang kembali</p>
           <p className="flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
-            <Calendar className="h-3 w-3" /> {branch.name}
+            <MapPin className="h-3 w-3" /> {branch.name}
           </p>
         </div>
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-cream dark:bg-zinc-800">
+          <Store className="h-6 w-6 text-brand-maroon" />
+        </span>
       </div>
 
       {/* Estimated earnings this month */}
@@ -77,7 +126,9 @@ export default async function StaffHomePage({
               <Wallet className="h-6 w-6 text-green-700 dark:text-green-400" />
             </span>
             <div className="flex-1">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Anggaran Gaji Bulan Ini</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Anggaran Gaji Bulan Ini
+              </p>
               <p className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
                 RM {earnings.amount.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
@@ -89,6 +140,7 @@ export default async function StaffHomePage({
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">Gaji bulanan tetap</p>
               )}
             </div>
+            <ChevronRight className="h-5 w-5 shrink-0 text-zinc-300 dark:text-zinc-600" />
           </div>
         </div>
       )}
@@ -101,7 +153,9 @@ export default async function StaffHomePage({
               <Clock className="h-6 w-6 text-brand-maroon" />
             </span>
             <div className="flex-1">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Syif Hari Ini</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Syif Hari Ini
+              </p>
               {attendance.scheduled && !attendance.scheduled.isOffDay ? (
                 <p className="text-lg font-bold text-brand-maroon dark:text-red-400">
                   {attendance.scheduled.startTime} – {attendance.scheduled.endTime}
@@ -116,7 +170,7 @@ export default async function StaffHomePage({
               )}
             </div>
           </div>
-          <div className="mt-3 [&_button]:flex [&_button]:items-center [&_button]:justify-center [&_button]:gap-2">
+          <div className="mt-3 [&_button]:flex [&_button]:min-h-12 [&_button]:w-full [&_button]:items-center [&_button]:justify-center [&_button]:gap-2 [&_button]:rounded-xl [&_button]:bg-gradient-to-r [&_button]:from-brand-maroon [&_button]:to-[#5c0f0f] [&_button]:text-base [&_button]:font-bold [&_button]:shadow-md">
             <ClockButton
               branchSlug={branchSlug}
               clockInTime={attendance.clockInAt ? formatBranchTime(attendance.clockInAt, branch.timezone) : null}
@@ -130,46 +184,39 @@ export default async function StaffHomePage({
       {/* Summary grid */}
       <div>
         <h2 className="mb-2 text-sm font-bold text-zinc-900 dark:text-zinc-50">
-          Ringkasan Hari Ini
+          ✨ Ringkasan Hari Ini
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-pink-100 dark:bg-pink-950">
-              <ClipboardCheck className="h-6 w-6 text-brand-maroon" />
-            </span>
-            <p className="mt-2 text-xl font-bold text-brand-maroon dark:text-red-400">
-              {checklistCompleted}/{checklistTotal}
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Checklist Selesai</p>
-          </div>
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950">
-              <ListTodo className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-            </span>
-            <p className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-50">
-              {dailyTasks.length}
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Tugasan Hari Ini</p>
-          </div>
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
-              <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </span>
-            <p className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-50">
-              {schedule.workingCount}
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Staf Bertugas</p>
-          </div>
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
-              <Megaphone className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </span>
-            <p className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-50">
-              {announcements.length}
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Pengumuman</p>
-          </div>
+          {SUMMARY_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+              >
+                <span className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${item.bg}`}>
+                  <Icon className={`h-6 w-6 ${item.color}`} />
+                </span>
+                <p className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-50">{item.value}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{item.label}</p>
+                <Link
+                  href={item.href}
+                  className="mt-1.5 inline-flex items-center gap-0.5 text-xs font-medium text-brand-maroon dark:text-red-400"
+                >
+                  Lihat Detail <ChevronRight className="h-3 w-3" />
+                </Link>
+              </div>
+            );
+          })}
         </div>
+      </div>
+
+      {/* Quote banner */}
+      <div className="rounded-2xl border border-brand-gold/30 bg-brand-cream p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+          &ldquo;Kerja hari ini, hasil esok hari.&rdquo;
+        </p>
+        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Usaha, doa, tawakal.</p>
       </div>
 
       {/* Today's tasks */}

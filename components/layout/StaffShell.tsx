@@ -1,6 +1,6 @@
 "use client";
-
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Calendar, ListTodo, BookOpen, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -35,19 +35,37 @@ export function StaffShell({
 
   return (
     <div className="flex min-h-screen flex-col bg-brand-cream dark:bg-zinc-950">
-      <header className="relative flex items-center justify-center bg-brand-maroon px-4 py-3 text-white">
-        <span className="font-display text-xl">{branchName}</span>
-        <button
-          onClick={onLogout}
-          aria-label="Log out"
-          className="absolute right-4 flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10"
-        >
-          <LogOut className="h-4 w-4" />
-        </button>
+      <header className="relative overflow-hidden rounded-b-[2.5rem] bg-gradient-to-br from-[#5c0f0f] to-brand-maroon px-4 pb-8 pt-4 text-white shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-brand-gold bg-white/10">
+              <Image
+                src="/brand/mascot-chick.png"
+                alt="Tenderista"
+                width={48}
+                height={48}
+                className="h-full w-full object-cover"
+              />
+            </span>
+            <div>
+              <p className="font-display text-lg leading-none tracking-wide">TENDERISTA</p>
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70">
+                {branchName}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onLogout}
+            aria-label="Log out"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 hover:bg-white/20"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-4 py-4">
-          <PullToRefresh>{children}</PullToRefresh>
-        </main>
+        <PullToRefresh>{children}</PullToRefresh>
+      </main>
       <nav className="sticky bottom-0 grid grid-cols-5 border-t border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-900">
         {NAV_ITEMS.map((item) => {
           const href = `/${branchSlug}${item.href ? `/${item.href}` : ""}`;
