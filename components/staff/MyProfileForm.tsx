@@ -217,7 +217,7 @@ export function MyProfileForm({
           disabled={saving}
           className="min-h-11 flex-1 rounded-lg bg-brand-maroon px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
         >
-          {saving ? "Menyimpan…" : "Simpan"}
+          {saving ? "Saving…" : "Save"}
         </button>
         <button
           type="button"
@@ -225,7 +225,7 @@ export function MyProfileForm({
           disabled={saving}
           className="min-h-11 rounded-lg bg-zinc-100 px-4 py-2.5 text-sm font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
         >
-          Batal
+          Cancel
         </button>
       </div>
     </div>

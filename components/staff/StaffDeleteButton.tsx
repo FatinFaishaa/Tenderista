@@ -18,7 +18,7 @@ export function StaffDeleteButton({
 
   async function onDelete() {
     const confirmed = window.confirm(
-      `Padam ${staffName} secara KEKAL? Semua rekod kehadiran, jadual, dan gaji staf ini akan turut dipadam dan TIDAK boleh dipulihkan.`
+      `Permanently delete ${staffName}? All attendance, schedule, and payroll records for this staff member will also be deleted and CANNOT be recovered.`
     );
     if (!confirmed) return;
 

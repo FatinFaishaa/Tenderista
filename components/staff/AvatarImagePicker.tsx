@@ -42,7 +42,7 @@ export function AvatarImagePicker({
 
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="mb-3 text-sm font-bold text-zinc-900 dark:text-zinc-50">Pilih Avatar Anda</p>
+      <p className="mb-3 text-sm font-bold text-zinc-900 dark:text-zinc-50">Choose Your Avatar</p>
       <div className="grid grid-cols-4 gap-2">
         {options.map((image) => (
           <button
