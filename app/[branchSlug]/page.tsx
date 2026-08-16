@@ -23,7 +23,8 @@ import { getClosingProgressByDepartment } from "@/lib/closingChecklists/queries"
 import { getTodaysScheduleSummary } from "@/lib/roster/queries";
 import { listAnnouncements } from "@/lib/announcements/queries";
 import { ClockButton } from "@/components/attendance/ClockButton";
-import { formatBranchTime } from "@/lib/utils/branchDate";
+import { formatBranchTime, getBranchLocalDateString } from "@/lib/utils/branchDate";
+import { getTodaysQuote } from "@/lib/dailyQuotes";
 
 function sumProgress(groups: { total: number; completed: number }[]) {
   return groups.reduce(
@@ -44,6 +45,8 @@ export default async function StaffHomePage({
 
   const branch = await resolveBranchForUser(branchSlug, userId);
   if (!branch) redirect("/branches");
+
+  const todaysQuote = getTodaysQuote(getBranchLocalDateString(branch.timezone));
 
   const [profile, attendance, dailyTasks, openingGroups, closingGroups, schedule, announcements, earnings] =
     await Promise.all([
@@ -218,16 +221,16 @@ export default async function StaffHomePage({
         </div>
       </div>
 
-      {/* Quote banner */}
+      {/* Quote banner (rotates daily) */}
       <div className="relative overflow-hidden rounded-2xl border border-brand-gold/30 bg-brand-cream p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="relative z-10 max-w-[65%]">
           <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-            &ldquo;Today's work, tomorrow's reward.&rdquo;
+            {todaysQuote.headline}
           </p>
-          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Effort, prayer, trust in God.</p>
+          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{todaysQuote.subtitle}</p>
         </div>
         <Image
-          src="/brand/chicken-bucket.png"
+          src={todaysQuote.image}
           alt=""
           width={160}
           height={160}
