@@ -1,36 +1,17 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
+import { Trash2 } from "lucide-react";
 
 export function DailyTaskRowControls({
   branchSlug,
   taskId,
-  isFirst,
-  isLast,
 }: {
   branchSlug: string;
   taskId: string;
-  isFirst: boolean;
-  isLast: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
-  async function move(direction: "up" | "down") {
-    setLoading(true);
-    try {
-      await fetch(`/api/branches/${branchSlug}/daily-tasks/${taskId}/move`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ direction }),
-      });
-      router.refresh();
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function onDelete() {
     if (!window.confirm("Delete this task? This can't be undone.")) return;
@@ -46,28 +27,14 @@ export function DailyTaskRowControls({
   }
 
   return (
-    <div className="flex shrink-0 items-center gap-1">
-      <Button
-        variant="ghost"
-        onClick={() => move("up")}
-        disabled={loading || isFirst}
-        aria-label="Move up"
-        className="px-2 py-1 text-sm"
-      >
-        ↑
-      </Button>
-      <Button
-        variant="ghost"
-        onClick={() => move("down")}
-        disabled={loading || isLast}
-        aria-label="Move down"
-        className="px-2 py-1 text-sm"
-      >
-        ↓
-      </Button>
-      <Button variant="danger" onClick={onDelete} disabled={loading} className="px-3 py-1.5 text-sm">
-        Delete
-      </Button>
-    </div>
+    <button
+      type="button"
+      onClick={onDelete}
+      disabled={loading}
+      className="flex items-center gap-1 text-xs font-medium text-red-600 disabled:opacity-50 dark:text-red-400"
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+      Delete
+    </button>
   );
 }
