@@ -15,7 +15,7 @@ export function InventorySearchBar({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Cari nama item…"
+        placeholder="Search item name…"
         className="h-10 w-full rounded-full border border-zinc-300 bg-white pl-9 pr-9 text-sm text-zinc-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
       />
       {value && (

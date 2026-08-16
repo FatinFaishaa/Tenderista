@@ -21,7 +21,7 @@ export function OwnerCategoryItemsList({
       <InventorySearchBar value={query} onChange={setQuery} />
       {filtered.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {query ? "Tiada item sepadan." : "No stock items yet in this category."}
+          {query ? "No matching items." : "No stock items yet in this category."}
         </p>
       ) : (
         <div className="space-y-2">

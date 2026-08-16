@@ -71,7 +71,7 @@ export function StockItemRow({
 
   async function onDelete() {
     const confirmed = window.confirm(
-      `Padam "${item.name}" secara kekal? Tindakan ini tidak boleh dibuat asal.`
+      `Permanently delete "${item.name}"? This action cannot be undone.`
     );
     if (!confirmed) return;
 
