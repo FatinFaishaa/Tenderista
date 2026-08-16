@@ -9,7 +9,7 @@ import {
   Users,
   Calendar,
   ChevronRight,
-  ClipboardCheck,
+  Bell,
   Megaphone,
   Package,
   FileText,
@@ -25,8 +25,6 @@ import {
 } from "@/lib/financials/queries";
 import { getLowStockItems } from "@/lib/inventory/queries";
 import { getPendingLeaveSummaryForBranch } from "@/lib/leave/queries";
-import { getProgressByDepartment } from "@/lib/checklists/queries";
-import { getClosingProgressByDepartment } from "@/lib/closingChecklists/queries";
 import { getBranchLocalDateString } from "@/lib/utils/branchDate";
 import { formatMoney } from "@/lib/utils/money";
 import { LEAVE_TYPE_LABELS } from "@/lib/validation/leave";
@@ -47,13 +45,6 @@ function summarizeAttendance(rows: TodaysAttendanceRow[]) {
     }
   }
   return { present, late, absent, total: rows.length };
-}
-
-function sumProgress(groups: { total: number; completed: number }[]) {
-  return groups.reduce(
-    (acc, g) => ({ total: acc.total + g.total, completed: acc.completed + g.completed }),
-    { total: 0, completed: 0 }
-  );
 }
 
 function addDaysToDateStr(dateStr: string, days: number): string {
@@ -97,8 +88,6 @@ export default async function OwnerDashboardPage({
     lastWeekTrend,
     lowStockItems,
     pendingLeave,
-    openingGroups,
-    closingGroups,
   ] = await Promise.all([
     getMyProfile(branch.id, userId),
     listTodaysAttendance(branch.id, userId, branch.timezone, today),
@@ -108,8 +97,6 @@ export default async function OwnerDashboardPage({
     getWeeklySalesTrend(branch.id, userId, addDaysToDateStr(todayStr, -7)),
     getLowStockItems(branch.id, userId),
     getPendingLeaveSummaryForBranch(branch.id, userId),
-    getProgressByDepartment(branch.id, userId, branch.timezone, today),
-    getClosingProgressByDepartment(branch.id, userId, branch.timezone, today),
   ]);
 
   const attendance = summarizeAttendance(attendanceRows);
@@ -121,12 +108,6 @@ export default async function OwnerDashboardPage({
   const cashInHand = todayFinancial ? Number(todayFinancial.actualCash) : 0;
   const expectedCash = todayFinancial ? Number(todayFinancial.expectedCash) : 0;
 
-  const opening = sumProgress(openingGroups);
-  const closing = sumProgress(closingGroups);
-  const checklistTotal = opening.total + closing.total;
-  const checklistCompleted = opening.completed + closing.completed;
-  const checklistPct = checklistTotal > 0 ? Math.round((checklistCompleted / checklistTotal) * 100) : 0;
-
   const weekTotal = weeklyTrend.reduce((sum, d) => sum + d.sales, 0);
   const lastWeekTotal = lastWeekTrend.reduce((sum, d) => sum + d.sales, 0);
   const weekChangePct = lastWeekTotal > 0 ? ((weekTotal - lastWeekTotal) / lastWeekTotal) * 100 : null;
@@ -136,13 +117,27 @@ export default async function OwnerDashboardPage({
   return (
     <div className="space-y-5">
       {/* Greeting header */}
-      <div className="flex items-center gap-3">
-        <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} />
-        <div>
-          <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Hi Boss 👋</p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Owner Dashboard</p>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500">📍 {branch.name}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Avatar avatarEmoji={profile.avatarEmoji} avatarImage={profile.avatarImage} size={56} />
+          <div>
+            <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Hi Boss 👋</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Owner Dashboard</p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">📍 {branch.name}</p>
+          </div>
         </div>
+        {pendingLeave.count > 0 && (
+          <Link
+            href={`/office/${branchSlug}/staff/leave-requests`}
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-950"
+            aria-label={`${pendingLeave.count} permohonan cuti tertunda`}
+          >
+            <Bell className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              {pendingLeave.count}
+            </span>
+          </Link>
+        )}
       </div>
 
       {/* Sales + Cash cards */}
@@ -226,7 +221,7 @@ export default async function OwnerDashboardPage({
         </div>
       </div>
 
-      {/* Low Stock + Checklist Progress */}
+      {/* Low Stock Alerts */}
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Low Stock Alerts</p>
@@ -254,47 +249,6 @@ export default async function OwnerDashboardPage({
             ))}
           </div>
         )}
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Checklist Progress</p>
-          <span className="text-xs text-zinc-400 dark:text-zinc-500">Hari Ini</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative flex h-24 w-24 shrink-0 items-center justify-center">
-            <svg className="h-24 w-24 -rotate-90">
-              <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="none" className="text-zinc-100 dark:text-zinc-800" />
-              <circle
-                cx="48"
-                cy="48"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 40}`}
-                strokeDashoffset={`${2 * Math.PI * 40 * (1 - checklistPct / 100)}`}
-                strokeLinecap="round"
-                className="text-brand-maroon"
-              />
-            </svg>
-            <span className="absolute text-lg font-bold text-brand-maroon dark:text-red-400">
-              {checklistPct}%
-            </span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-              {checklistCompleted}/{checklistTotal} selesai
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Teruskan usaha yang hebat!</p>
-            <Link
-              href={`/office/${branchSlug}/checklists`}
-              className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand-cream px-3 py-1.5 text-xs font-medium text-brand-maroon dark:bg-zinc-800 dark:text-red-400"
-            >
-              <ClipboardCheck className="h-3.5 w-3.5" /> Lihat Checklist
-            </Link>
-          </div>
-        </div>
       </div>
 
       {/* Pending Leave Requests */}
