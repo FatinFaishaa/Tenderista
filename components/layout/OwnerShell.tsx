@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils/cn";
 import { PullToRefresh } from "@/components/layout/PullToRefresh";
 
 const NAV_ITEMS = [
-  { label: "Utama", icon: Home, href: "dashboard" },
-  { label: "Jadual", icon: Calendar, href: "roster" },
-  { label: "Tugasan", icon: ListTodo, href: "daily-tasks" },
+  { label: "Home", icon: Home, href: "dashboard" },
+  { label: "Schedule", icon: Calendar, href: "roster" },
+  { label: "Tasks", icon: ListTodo, href: "daily-tasks" },
   { label: "SOP", icon: BookOpen, href: "sops" },
-  { label: "Akaun", icon: User, href: "account" },
+  { label: "Account", icon: User, href: "account" },
 ] as const;
 
 export function OwnerShell({

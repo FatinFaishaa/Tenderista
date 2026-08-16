@@ -42,10 +42,10 @@ export function RosterCellEditor({
     return (
       <div
         className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300"
-        title="Staff ini sedang bercuti (diluluskan) — batalkan cuti dulu untuk assign shift."
+        title="This staff member is on approved leave — cancel the leave first to assign a shift."
       >
         <Lock className="h-3 w-3" />
-        Cuti
+        Leave
       </div>
     );
   }

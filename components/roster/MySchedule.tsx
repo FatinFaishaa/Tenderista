@@ -96,7 +96,7 @@ export async function MySchedule({
           <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-50">
             {workingDays.length}
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Hari Bekerja</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Working Days</p>
           <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{totalHours} jam</p>
         </div>
         <div className="rounded-2xl border border-zinc-200 bg-white p-3 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -116,7 +116,7 @@ export async function MySchedule({
           <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-50">
             {unpublishedDays.length}
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Tiada Jadual</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">No Schedule</p>
           <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{unpublishedDays.length} hari</p>
         </div>
       </div>
@@ -150,7 +150,7 @@ export async function MySchedule({
                 </div>
                 {isToday && (
                   <span className="rounded-full bg-brand-maroon px-2.5 py-1 text-xs font-medium text-white">
-                    Hari Ini
+                    Today
                   </span>
                 )}
               </div>
@@ -177,17 +177,17 @@ export async function MySchedule({
                         Off Day
                       </span>
                       <p className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        <Leaf className="h-3.5 w-3.5" /> Hari rehat
+                        <Leaf className="h-3.5 w-3.5" /> Rest day
                       </p>
                     </>
                   )}
                   {day.status === "unpublished" && (
                     <>
                       <span className="mb-1 inline-block rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-950 dark:text-orange-400">
-                        Tiada jadual lagi
+                        No schedule yet
                       </span>
                       <p className="flex items-center gap-1 text-sm text-zinc-400 dark:text-zinc-500">
-                        <Clock className="h-3.5 w-3.5" /> Belum dijadualkan
+                        <Clock className="h-3.5 w-3.5" /> Not scheduled yet
                       </p>
                     </>
                   )}

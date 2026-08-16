@@ -47,11 +47,11 @@ export function DailyRosterCards({
   return (
     <div>
       <h2 className="mb-2 text-sm font-bold text-zinc-900 dark:text-zinc-50">
-        Siapa Bertugas Hari Ini
+        Who's on Duty Today
       </h2>
       <div className="space-y-2">
         {rows.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Tiada staf aktif.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">No active staff.</p>
         ) : (
           rows.map((row) => {
             const config = STATUS_CONFIG[row.status];
@@ -89,7 +89,7 @@ export function DailyRosterCards({
       </div>
 
       <h2 className="mb-2 mt-5 text-sm font-bold text-zinc-900 dark:text-zinc-50">
-        Ringkasan Hari Ini
+        Today's Summary
       </h2>
       <div className="grid grid-cols-4 gap-2">
         <div className="rounded-2xl border border-zinc-200 bg-white p-3 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
