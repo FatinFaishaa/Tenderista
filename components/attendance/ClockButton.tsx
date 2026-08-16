@@ -53,13 +53,13 @@ export function ClockButton({
   return (
     <div className="space-y-2">
       <FormError message={error} />
-      <p className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+      <p className={`flex items-center gap-2 text-sm font-medium ${clockOutTime ? "text-amber-600 dark:text-amber-400" : "text-green-600 dark:text-green-400"}`}>
         Clocked in at {clockInTime}
         {status === "late" && <Badge tone="warning">Late</Badge>}
         {status === "present" && <Badge tone="success">On time</Badge>}
       </p>
       {clockOutTime ? (
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">
+        <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
           Clocked out at {clockOutTime} — done for today.
         </p>
       ) : (

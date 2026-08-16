@@ -60,6 +60,21 @@ export default async function StaffHomePage({
       getMyMonthlyEarnings(branch.id, userId, branch.timezone),
     ]);
 
+  const clockInAtValue = attendance.hasStaffRecord ? attendance.clockInAt : null;
+  const clockOutAtValue = attendance.hasStaffRecord ? attendance.clockOutAt : null;
+  const clockState: "before" | "clockedIn" | "clockedOut" =
+    !clockInAtValue ? "before" : !clockOutAtValue ? "clockedIn" : "clockedOut";
+  const clockMascot = {
+    before: "/brand/mascots/before-clockin.png",
+    clockedIn: "/brand/mascots/after-clockin.png",
+    clockedOut: "/brand/mascots/after-clockout.png",
+  }[clockState];
+  const clockTheme = {
+    before: { iconBg: "bg-pink-100 dark:bg-pink-950", iconColor: "text-brand-maroon" },
+    clockedIn: { iconBg: "bg-green-100 dark:bg-green-950", iconColor: "text-green-600 dark:text-green-400" },
+    clockedOut: { iconBg: "bg-amber-100 dark:bg-amber-950", iconColor: "text-amber-600 dark:text-amber-400" },
+  }[clockState];
+
   const opening = sumProgress(openingGroups);
   const closing = sumProgress(closingGroups);
   const checklistTotal = opening.total + closing.total;
@@ -153,10 +168,18 @@ export default async function StaffHomePage({
 
       {/* Clock In card */}
       {attendance.hasStaffRecord && (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-100 dark:bg-pink-950">
-              <Clock className="h-6 w-6 text-brand-maroon" />
+        <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <Image
+            src={clockMascot}
+            alt=""
+            width={140}
+            height={140}
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-2 -right-2 h-20 w-20 object-contain"
+          />
+          <div className="relative z-10 flex items-center gap-3">
+            <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${clockTheme.iconBg}`}>
+              <Clock className={`h-6 w-6 ${clockTheme.iconColor}`} />
             </span>
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -176,7 +199,7 @@ export default async function StaffHomePage({
               )}
             </div>
           </div>
-          <div className="mt-3 [&_button]:flex [&_button]:min-h-12 [&_button]:w-full [&_button]:items-center [&_button]:justify-center [&_button]:gap-2 [&_button]:rounded-xl [&_button]:bg-gradient-to-r [&_button]:from-brand-maroon [&_button]:to-[#5c0f0f] [&_button]:text-base [&_button]:font-bold [&_button]:shadow-md">
+          <div className="relative z-10 mt-3 [&_button]:flex [&_button]:min-h-12 [&_button]:w-full [&_button]:items-center [&_button]:justify-center [&_button]:gap-2 [&_button]:rounded-xl [&_button]:bg-gradient-to-r [&_button]:from-brand-maroon [&_button]:to-[#5c0f0f] [&_button]:text-base [&_button]:font-bold [&_button]:shadow-md">
             <ClockButton
               branchSlug={branchSlug}
               clockInTime={attendance.clockInAt ? formatBranchTime(attendance.clockInAt, branch.timezone) : null}
