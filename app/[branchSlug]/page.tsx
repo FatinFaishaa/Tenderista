@@ -172,10 +172,10 @@ export default async function StaffHomePage({
           <Image
             src={clockMascot}
             alt=""
-            width={140}
-            height={140}
+            width={200}
+            height={200}
             aria-hidden="true"
-            className="pointer-events-none absolute -top-2 -right-2 h-16 w-16 object-contain"
+            className="pointer-events-none absolute -top-4 -right-3 h-28 w-28 object-contain"
           />
           <div className="relative z-10 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${clockTheme.iconBg}`}>
